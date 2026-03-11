@@ -43,7 +43,7 @@ function Root() {
       })
 
       if (videoPaths.length === 0) {
-        toast.error('No valid files found.')
+        toast.error('未找到有效文件。')
         return
       }
 
@@ -123,7 +123,7 @@ function Root() {
       appProxy.state.isLoadingFiles = false
       if (corruptedFilesCount > 0) {
         toast.error(
-          `${videoPaths.length > 1 ? 'Some files seem' : 'File seems'} to be corrupted/invalid ${videoPaths.length > 1 ? 'and are filtered out' : ''}.`,
+          `${videoPaths.length > 1 ? '部分文件' : '文件'}似乎已损坏或无效${videoPaths.length > 1 ? '，已自动过滤。' : '。'}`,
         )
         if (corruptedFilesCount === videoPaths.length) {
           resetProxy()
@@ -138,7 +138,7 @@ function Root() {
       const filePath = await open({
         directory: false,
         multiple: true,
-        title: `Select video(s) to compress.`,
+        title: `选择要压缩的视频。`,
         filters: [
           { name: 'video', extensions: Object.keys(extensions?.video) },
         ],
@@ -151,7 +151,7 @@ function Root() {
       }
       handleVideoSelection(filePath)
     } catch (error: any) {
-      toast.error(error?.message ?? 'Could not select a video.')
+      toast.error(error?.message ?? '无法选择视频。')
     }
   }, [handleVideoSelection])
 
@@ -194,9 +194,9 @@ function Root() {
         <div className="flex flex-col justify-center items-center py-16 px-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl">
           <Icon name="videoFile" className="text-primary" size={60} />
           <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
-            Drag & Drop
-            <span className="block text-xs">Or</span>
-            Click to select video(s)
+            拖拽文件到此处
+            <span className="block text-xs">或</span>
+            点击选择视频
           </p>
         </div>
       </motion.div>

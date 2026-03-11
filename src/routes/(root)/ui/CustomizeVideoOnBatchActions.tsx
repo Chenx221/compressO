@@ -77,7 +77,7 @@ function CustomizeVideoOnBatchActions() {
             variant="flat"
             radius="md"
           >
-            Reset
+            重置
           </Button>
           <Button
             size="sm"
@@ -85,7 +85,7 @@ function CustomizeVideoOnBatchActions() {
             radius="md"
             onPress={handleApplyVideoConfig}
           >
-            Apply
+            应用
           </Button>
         </div>
       </div>

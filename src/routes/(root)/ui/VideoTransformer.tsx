@@ -216,7 +216,7 @@ function VideoTransformer({ videoIndex }: VideoTransformerProps) {
       <div className="mx-auto flex items-center justify-center gap-2 mt-4">
         <>
           <Button size="sm" isIconOnly onPress={() => rotate(-90)}>
-            <Tooltip content="Rotate Left" aria-label="Rotate Left">
+            <Tooltip content="向左旋转" aria-label="向左旋转">
               <Icon name="rotateLeft" size={20} />
             </Tooltip>
           </Button>
@@ -224,7 +224,7 @@ function VideoTransformer({ videoIndex }: VideoTransformerProps) {
         </>
         <>
           <Button size="sm" isIconOnly onPress={() => flip(false, true)}>
-            <Tooltip content="Flip Vertical" aria-label="Flip Vertical">
+            <Tooltip content="垂直翻转" aria-label="垂直翻转">
               <Icon name="flipVertical" size={20} />
             </Tooltip>
           </Button>{' '}
@@ -232,7 +232,7 @@ function VideoTransformer({ videoIndex }: VideoTransformerProps) {
         </>
         <>
           <Button size="sm" isIconOnly onPress={() => flip(true, false)}>
-            <Tooltip content="Flip Horizontal" aria-label="Flip Horizontal">
+            <Tooltip content="水平翻转" aria-label="水平翻转">
               <Icon name="flipHorizontal" size={20} />
             </Tooltip>
           </Button>{' '}
@@ -240,7 +240,7 @@ function VideoTransformer({ videoIndex }: VideoTransformerProps) {
         </>{' '}
         <>
           <Button size="sm" isIconOnly onPress={resetZoom}>
-            <Tooltip content="Reset Zoom" aria-label="Reset Zoom">
+            <Tooltip content="重置缩放" aria-label="重置缩放">
               <Icon name="resetZoom" size={20} />
             </Tooltip>
             <Divider className="my-3 h-5" orientation="vertical" />
@@ -249,7 +249,7 @@ function VideoTransformer({ videoIndex }: VideoTransformerProps) {
         </>
         <>
           <Button size="sm" isIconOnly onPress={expandCropArea}>
-            <Tooltip content="Expand" aria-label="Expand">
+            <Tooltip content="铺满裁剪区域" aria-label="铺满裁剪区域">
               <Icon name="expand" size={20} />
             </Tooltip>
           </Button>

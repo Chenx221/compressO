@@ -79,7 +79,7 @@ function VideoFPS({ videoIndex }: VideoFPSProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Frames Per Second:"
+              label="帧率（FPS）："
               className="block flex-shrink-0 rounded-2xl !mt-8"
               selectedKeys={[String(initialFpsValue)!]}
               size="sm"

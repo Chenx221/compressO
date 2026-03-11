@@ -108,7 +108,7 @@ function CompressionQuality({ videoIndex }: CompressionQualityProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full font-bold">
-          Quality
+          质量
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -116,19 +116,19 @@ function CompressionQuality({ videoIndex }: CompressionQualityProps) {
           <motion.div {...slideDownTransition}>
             <Slider
               label
-              aria-label="Quality"
+              aria-label="质量"
               marks={[
                 {
                   value: 0,
-                  label: 'Low',
+                  label: '低',
                 },
                 {
                   value: 50,
-                  label: 'Medium',
+                  label: '中',
                 },
                 {
                   value: 99,
-                  label: 'High',
+                  label: '高',
                 },
               ]}
               className="mb-8 mx-auto"
@@ -139,10 +139,10 @@ function CompressionQuality({ videoIndex }: CompressionQualityProps) {
               getValue={(value) => {
                 const val = Array.isArray(value) ? value?.[0] : +value
                 return val < 50
-                  ? 'Low'
+                  ? '低'
                   : val >= 50 && val < 100
-                    ? 'Medium'
-                    : 'High'
+                    ? '中'
+                    : '高'
               }}
               renderValue={(props) => (
                 <p className="text-primary text-xs font-bold">

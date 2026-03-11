@@ -94,7 +94,7 @@ function PreviewSingleVideo({ videoIndex }: PreviewSingleVideoProps) {
                 {compressedSizeDiff.toFixed(2)?.endsWith('.00')
                   ? compressedSizeDiff.toFixed(2)?.slice(0, -3)
                   : compressedSizeDiff.toFixed(2)}
-                %<span className="text-large block">smaller</span>
+                %<span className="text-large block">更小</span>
               </p>
             ) : null}
           </section>
@@ -102,7 +102,7 @@ function PreviewSingleVideo({ videoIndex }: PreviewSingleVideoProps) {
           <section className={cn(['my-4 mb-2', styles.videoMetadata])}>
             <>
               <div>
-                <p className="italic text-gray-600 dark:text-gray-400">Size</p>
+                <p className="italic text-gray-600 dark:text-gray-400">大小</p>
                 <span className="block font-black">{videoSize}</span>
               </div>
               <Divider orientation="vertical" className="h-10" />
@@ -110,7 +110,7 @@ function PreviewSingleVideo({ videoIndex }: PreviewSingleVideoProps) {
             <>
               <div>
                 <p className="italic text-gray-600 dark:text-gray-400">
-                  Extension
+                  格式
                 </p>
                 <span className="block font-black">
                   {videoExtension ?? '-'}
@@ -123,7 +123,7 @@ function PreviewSingleVideo({ videoIndex }: PreviewSingleVideoProps) {
               <>
                 <div>
                   <p className="italic text-gray-600 dark:text-gray-400">
-                    Duration
+                    时长
                   </p>
                   <span className="block font-black">
                     {formatDuration(videoDuration) ?? '-'}
@@ -137,7 +137,7 @@ function PreviewSingleVideo({ videoIndex }: PreviewSingleVideoProps) {
                   <Divider orientation="vertical" className="h-10" />{' '}
                   <div>
                     <p className="italic text-gray-600 dark:text-gray-400">
-                      Dimensions
+                      分辨率
                     </p>
                     <span className="block font-black">
                       {dimensions.width ?? '-'} x {dimensions.height ?? '-'}
@@ -168,7 +168,7 @@ function PreviewSingleVideo({ videoIndex }: PreviewSingleVideoProps) {
                   }}
                   size="sm"
                 >
-                  View Full Info
+                  查看完整信息
                 </Button>
               </div>
             </>
@@ -221,14 +221,14 @@ function PreviewSingleVideo({ videoIndex }: PreviewSingleVideoProps) {
           aria-label={`Progress-${compressionProgress}%`}
         />
         <Image
-          alt="video to compress"
+          alt="待压缩视频"
           src={thumbnailPath as string}
           className="z-0 w-[400px] h-[400px] min-w-[400px] min-h-[400px] hlg:w-[450px] hlg:h-[450px] hlg:min-w-[450px] hlg:min-h-[450px] object-cover rounded-full flex-shrink-0"
         />
         <div className="blur-2xl  z-[10] absolute top-0 right-0 bottom-0 left-0 rounded-full" />
       </div>
       <p className="italic text-sm mt-10 text-gray-600 dark:text-gray-400 text-center animate-pulse">
-        Processing...
+        处理中...
       </p>
       <p
         className={`not-italic text-2xl text-center font-bold text-primary my-4 opacity-${

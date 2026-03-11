@@ -22,31 +22,31 @@ const VIDEO_CODECS: readonly VideoCodecOption[] = [
   {
     value: 'libx264',
     name: 'H.264 (AVC)',
-    description: 'Most compatible, good quality',
+    description: '兼容性最好，画质稳定',
     compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
   },
   {
     value: 'libx265',
     name: 'H.265 (HEVC)',
-    description: 'Better compression, newer standard',
+    description: '压缩效率更高，较新标准',
     compatible_containers: ['mp4', 'mov', 'mkv'] as VideoExtension[],
   },
   {
     value: 'libvpx-vp9',
     name: 'VP9',
-    description: 'Open-source, great for web',
+    description: '开源编码，适合网页场景',
     compatible_containers: ['webm', 'mkv'] as VideoExtension[],
   },
   {
     value: 'libaom-av1',
     name: 'AV1',
-    description: 'Best compression, very slow',
+    description: '压缩率最高，速度较慢',
     compatible_containers: ['mp4', 'mkv', 'webm'] as VideoExtension[],
   },
   {
     value: 'mpeg4',
     name: 'MPEG-4',
-    description: 'Legacy codec, wide support',
+    description: '经典编码，支持范围广',
     compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
   },
 ]
@@ -147,7 +147,7 @@ function VideoCodec({ videoIndex }: VideoCodecProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full font-bold">
-          Codec
+          视频编码器
         </p>
       </Switch>
       <AnimatePresence mode="wait">
@@ -155,7 +155,7 @@ function VideoCodec({ videoIndex }: VideoCodecProps) {
           <motion.div {...slideDownTransition}>
             <Select
               fullWidth
-              label="Select Codec:"
+              label="选择编码器："
               className="block flex-shrink-0 rounded-2xl !mt-8"
               selectedKeys={[initialCodecValue]}
               size="sm"

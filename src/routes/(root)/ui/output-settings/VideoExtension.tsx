@@ -50,7 +50,7 @@ function VideoExtension({ videoIndex }: VideoExtensionProps) {
   return (
     <Select
       fullWidth
-      label="Extension:"
+      label="格式："
       className="block flex-shrink-0 rounded-2xl"
       size="sm"
       value={convertToExtension}

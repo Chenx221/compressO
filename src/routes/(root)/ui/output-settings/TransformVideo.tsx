@@ -49,7 +49,7 @@ function TransformVideo({ videoIndex }: TransformVideoProps) {
         isDisabled={shouldDisableInput}
       >
         <p className="text-gray-600 dark:text-gray-400 text-sm mr-2 w-full font-bold">
-          Transform
+          变换
         </p>
       </Switch>
       {shouldTransformVideo ? (
@@ -65,7 +65,7 @@ function TransformVideo({ videoIndex }: TransformVideoProps) {
             className="h-[unset] py-1 ml-auto"
             isDisabled={shouldDisableInput}
           >
-            Save
+            保存
           </Button>
         ) : (
           <Button
@@ -80,7 +80,7 @@ function TransformVideo({ videoIndex }: TransformVideoProps) {
             className="h-[unset] py-1 ml-auto"
             isDisabled={shouldDisableInput}
           >
-            <Icon name="pencil" size={16} /> Edit
+            <Icon name="pencil" size={16} /> 编辑
           </Button>
         )
       ) : null}

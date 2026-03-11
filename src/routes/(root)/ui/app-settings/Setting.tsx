@@ -33,8 +33,8 @@ function Setting() {
           <DropdownTrigger>
             <Button isIconOnly size="sm">
               <Tooltip
-                content="Open Settings"
-                aria-label="Open Settings"
+                content="打开设置"
+                aria-label="打开设置"
                 placement="right"
               >
                 <Icon name="setting" size={23} />
@@ -43,14 +43,14 @@ function Setting() {
           </DropdownTrigger>
           <DropdownMenu
             variant="faded"
-            aria-label="Dropdown menu with description"
+            aria-label="设置下拉菜单"
             onAction={handleDropdownAction}
           >
             <DropdownItem key="settings" startContent={<Icon name="setting" />}>
-              Settings
+              设置
             </DropdownItem>
             <DropdownItem key="about" startContent={<Icon name="info" />}>
-              About
+              关于
             </DropdownItem>
           </DropdownMenu>
         </Dropdown>
@@ -76,10 +76,10 @@ function AppSetting() {
     setIsCacheDeleting(true)
     try {
       await invokeDeleteCache()
-      toast.success('All cache were cleared.')
+      toast.success('缓存已全部清理。')
       setConfirmClearCache(false)
     } catch (_) {
-      toast.error('There was a problem clearing cache.')
+      toast.error('清理缓存时出现问题。')
     }
     setIsCacheDeleting(false)
   }
@@ -87,24 +87,24 @@ function AppSetting() {
   return (
     <div className="w-full py-12 pb-16 px-8">
       <section className="mb-6">
-        <Title title="Settings" iconProps={{ name: 'setting' }} />
+        <Title title="设置" iconProps={{ name: 'setting' }} />
       </section>
       <div className="mx-auto bg-zinc-100 dark:bg-zinc-800 rounded-lg px-4 py-3 overflow-hidden">
         <div className="flex justify-between items-center">
-          <p className="text-gray-600 dark:text-gray-400 text-sm">Theme</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">主题</p>
           <ThemeSwitcher />
         </div>
         <Divider className="my-2 dark:bg-zinc-700" />
         <div className="flex justify-between items-center">
-          <p className="text-gray-600 dark:text-gray-400 text-sm">Color</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">主题色</p>
           <ColorPicker />
         </div>
         <Divider className="my-2 dark:bg-zinc-700" />
         <div className="flex justify-between items-center">
-          <p className="dark:text-red-400 text-sm text-red-400">Clear Cache</p>
+          <p className="dark:text-red-400 text-sm text-red-400">清理缓存</p>
           <Tooltip
-            content="Clear cache"
-            aria-label="Clear cache"
+            content="清理缓存"
+            aria-label="清理缓存"
             placement="right"
             isDisabled={confirmClearCache}
           >
@@ -144,7 +144,7 @@ function AppSetting() {
                         opacity: 0,
                       }}
                     >
-                      Clear Now
+                      立即清理
                     </motion.p>
                   ) : null}
                 </AnimatePresence>

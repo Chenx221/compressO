@@ -45,15 +45,15 @@ type OutputSettingsProps = {
 const TABS = {
   video: {
     id: 'video',
-    title: 'Video',
+    title: '视频',
   },
   audio: {
     id: 'audio',
-    title: 'Audio',
+    title: '音频',
   },
   others: {
     id: 'others',
-    title: 'Others',
+    title: '其他',
   },
 } as const
 
@@ -233,7 +233,7 @@ function OutputSettings({ videoIndex }: OutputSettingsProps) {
       }
     } catch (error) {
       if (error !== 'CANCELLED') {
-        toast.error('Something went wrong during compression.')
+        toast.error('压缩过程中出现错误。')
         appProxy.timeTravel('beforeCompressionStarted')
       }
     }
@@ -266,15 +266,15 @@ function OutputSettings({ videoIndex }: OutputSettingsProps) {
       <div className="flex items-center justify-between w-full mb-2">
         <p className="text-xl font-bold">
           {videos.length === 1 || selectedVideoIndexForCustomization > -1
-            ? 'Output'
-            : 'Batch'}{' '}
-          Settings
+            ? '输出'
+            : '批量'}{' '}
+          设置
         </p>
         {!isCompressing ? <CompressionActions /> : null}
       </div>
       <section>
         <Tabs
-          aria-label="Compression Settings"
+          aria-label="压缩设置"
           size="sm"
           selectedKey={tab}
           onSelectionChange={(t) => setTab(t as keyof typeof TABS)}
@@ -349,7 +349,7 @@ function OutputSettings({ videoIndex }: OutputSettingsProps) {
               {hasNoAudio ? (
                 <div className="flex justify-center items-center absolute left-0 top-0 w-full h-full bg-white1/50 dark:bg-black1/50">
                   <p className="text-xs text-center mt-1 text-zinc-600 dark:text-zinc-400">
-                    No audio found
+                    未检测到音频
                   </p>
                 </div>
               ) : null}
@@ -377,7 +377,7 @@ function OutputSettings({ videoIndex }: OutputSettingsProps) {
               className="w-full text-primary bg-primary/20"
               isDisabled={isLoadingFiles}
             >
-              Process <Icon name="logo" size={25} />
+              处理 <Icon name="logo" size={25} />
             </Button>
           )}
         </div>

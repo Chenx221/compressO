@@ -113,7 +113,7 @@ function PreviewBatchVideos() {
   const handleCopyToClipboard = useCallback(async (savedPath: string) => {
     try {
       await copyFileToClipboard(savedPath)
-      toast.success('Copied to clipboard.')
+      toast.success('已复制到剪贴板。')
     } catch {}
   }, [])
 
@@ -183,8 +183,8 @@ function PreviewBatchVideos() {
                         video?.isProcessCompleted &&
                         video?.compressedVideo?.isSuccessful ? (
                           <Tooltip
-                            content="Copy to clipboard"
-                            aria-label="Copy to clipboard"
+                            content="复制到剪贴板"
+                            aria-label="复制到剪贴板"
                           >
                             <Button
                               size="sm"
@@ -209,8 +209,8 @@ function PreviewBatchVideos() {
                         video?.compressedVideo?.isSaved &&
                         video?.compressedVideo?.savedPath ? (
                           <Tooltip
-                            content="Show in File Explorer"
-                            aria-label="Show in File Explorer"
+                            content="在文件管理器中显示"
+                            aria-label="在文件管理器中显示"
                           >
                             <Button
                               size="sm"
@@ -274,7 +274,7 @@ function PreviewBatchVideos() {
                               track: 'dark:stroke-white/50',
                               value: 'font-bold text-sm text-white1',
                             }}
-                            aria-label="Processing"
+                            aria-label="处理中"
                           />
                           <div className="absolute inset-0 bg-black/70 z-10 rounded-lg"></div>
                         </>
@@ -322,7 +322,7 @@ function PreviewBatchVideos() {
                                         .toFixed(2)
                                         ?.slice(0, -3)
                                     : compressedSizeDiff.toFixed(2)}
-                                  %<span> smaller</span>
+                                  %<span> 更小</span>
                                 </p>
                               </>
                             ) : null}
@@ -331,7 +331,7 @@ function PreviewBatchVideos() {
                           <>
                             <div className="text-[11px] xl:text-[12px] xxl:text-[12px] 3xl:text-[12.5px]">
                               <p className="italic text-gray-600 dark:text-gray-400 mb-1">
-                                Size
+                                大小
                               </p>
                               <span className="block font-black">
                                 {video.size}
@@ -340,7 +340,7 @@ function PreviewBatchVideos() {
                             <Divider orientation="vertical" className="h-5" />
                             <div className="text-[11px] xxl:text-[12px] 3xl:text-[12.5px]">
                               <p className="italic text-gray-600 dark:text-gray-400 mb-1">
-                                Extension
+                                格式
                               </p>
                               <span className="block font-black">
                                 {video.extension ?? '-'}
@@ -354,7 +354,7 @@ function PreviewBatchVideos() {
                                 />
                                 <div className="text-[11px] xxl:text-[12px] 3xl:text-[12.5px]">
                                   <p className="italic text-gray-600 dark:text-gray-400 mb-1">
-                                    Duration
+                                    时长
                                   </p>
                                   <span className="block font-black">
                                     {formatDuration(video.videoDuration) ?? '-'}
@@ -370,7 +370,7 @@ function PreviewBatchVideos() {
                                 />
                                 <div className="text-[11px] xxl:text-[12px] 3xl:text-[12.5px]">
                                   <p className="italic text-gray-600 dark:text-gray-400 mb-1">
-                                    Dimensions
+                                    分辨率
                                   </p>
                                   <span className="block font-black">
                                     {video.dimensions.width ?? '-'} x{' '}
@@ -405,7 +405,7 @@ function PreviewBatchVideos() {
               <div className="flex items-center gap-6">
                 <div>
                   <p className="italic text-gray-600 dark:text-gray-400">
-                    Compressed
+                    已压缩
                   </p>
                   <p className="font-black text-lg">
                     {compressionStats?.compressedCount ?? 0} /{' '}
@@ -415,7 +415,7 @@ function PreviewBatchVideos() {
                 <Divider orientation="vertical" className="h-8" />
                 <div>
                   <p className="italic text-gray-600 dark:text-gray-400">
-                    Saved
+                    已节省
                   </p>
                   <p className="font-black text-lg text-green-600 dark:text-green-400">
                     {formatBytes(compressionStats.sizeSaved ?? 0) || '...'}
@@ -439,7 +439,7 @@ function PreviewBatchVideos() {
             <div className="flex items-center gap-6">
               <div>
                 <p className="italic text-gray-600 dark:text-gray-400">
-                  Videos
+                  视频数量
                 </p>
                 <p
                   className={cn(
@@ -450,14 +450,14 @@ function PreviewBatchVideos() {
                   {compressionStats.displayTotalVideos}
                   {compressionStats.cancelledCount > 0 ? (
                     <span className="text-xs italic text-warning-400 ml-2">
-                      ({compressionStats.cancelledCount} cancelled)
+                      （{compressionStats.cancelledCount} 已取消）
                     </span>
                   ) : null}
                 </p>
               </div>
               <Divider orientation="vertical" className="h-8" />
               <div>
-                <p className="italic text-gray-600 dark:text-gray-400">Size</p>
+                <p className="italic text-gray-600 dark:text-gray-400">总大小</p>
                 <p
                   className={cn(
                     'font-black text-lg',
@@ -472,7 +472,7 @@ function PreviewBatchVideos() {
                   <Divider orientation="vertical" className="h-8" />
                   <div>
                     <p className="italic text-gray-600 dark:text-gray-400">
-                      Output Size
+                      输出大小
                     </p>
                     <p
                       className={cn(
@@ -488,7 +488,7 @@ function PreviewBatchVideos() {
                   <Divider orientation="vertical" className="h-8" />
                   <div>
                     <p className="italic text-gray-600 dark:text-gray-400">
-                      Saved
+                      已节省
                     </p>
                     <p
                       className={cn(

@@ -32,14 +32,14 @@ function SaveVideo() {
         if (isBatch) {
           const selectedDirectory = await open({
             directory: true,
-            title: 'Choose directory to save the compressed videos.',
+            title: '选择用于保存压缩后视频的文件夹。',
           })
           if (selectedDirectory) {
             pathToSave = selectedDirectory as string
           }
         } else {
           pathToSave = await save({
-            title: 'Choose location to save the compressed video.',
+            title: '选择压缩后视频的保存位置。',
             defaultPath: `compressO-${compressedVideo?.fileNameToDisplay ?? fileName ?? ''}`,
           })
         }
@@ -93,7 +93,7 @@ function SaveVideo() {
           }
         }
       } catch (_) {
-        toast.error('Could not save video(s) to the given path.')
+        toast.error('无法将视频保存到指定路径。')
         for (let i = 0; i < videos.length; i++) {
           appProxy.state.videos[i].compressedVideo = {
             ...(snapshot(appProxy).state.videos[i].compressedVideo ?? {}),
@@ -131,7 +131,7 @@ function SaveVideo() {
 
     try {
       await copyFileToClipboard(savedPath)
-      toast.success('Copied to clipboard.')
+      toast.success('已复制到剪贴板。')
     } catch {}
   }
 
@@ -146,10 +146,10 @@ function SaveVideo() {
         fullWidth
       >
         {isSaving
-          ? 'Saving...'
+          ? '保存中...'
           : isSaved
-            ? 'Saved'
-            : `Save Video${videos.length > 1 ? 's' : ''}`}
+            ? '已保存'
+            : `保存视频${videos.length > 1 ? '' : ''}`}
         {!isSaving ? (
           <Icon name={isSaved ? 'tick' : 'save'} className="text-green-300" />
         ) : null}
@@ -157,8 +157,8 @@ function SaveVideo() {
       {isSaved ? (
         <>
           <Tooltip
-            content="Show in File Explorer"
-            aria-label="Show in File Explorer"
+            content="在文件管理器中显示"
+            aria-label="在文件管理器中显示"
           >
             <Button
               isIconOnly
@@ -173,7 +173,7 @@ function SaveVideo() {
       {!isCompressing &&
       singleVideo?.isProcessCompleted &&
       singleVideo?.compressedVideo?.isSuccessful ? (
-        <Tooltip content="Copy to clipboard" aria-label="Copy to clipboard">
+        <Tooltip content="复制到剪贴板" aria-label="复制到剪贴板">
           <Button
             isIconOnly
             className="ml-2 text-green-500"

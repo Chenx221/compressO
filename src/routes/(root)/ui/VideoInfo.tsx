@@ -46,23 +46,23 @@ type VideoInfoProps = {
 const TABS = {
   container: {
     id: 'container',
-    title: 'Container',
+    title: '容器',
   },
   video: {
     id: 'video',
-    title: 'Video',
+    title: '视频',
   },
   audio: {
     id: 'audio',
-    title: 'Audio',
+    title: '音频',
   },
   subtitles: {
     id: 'subtitles',
-    title: 'Subtitles',
+    title: '字幕',
   },
   chapters: {
     id: 'chapters',
-    title: 'Chapters',
+    title: '章节',
   },
 } as const
 
@@ -142,7 +142,7 @@ function VideoInfo({ videoIndex }: VideoInfoProps) {
           }
         }
       } catch {
-        toast.error('Failed to load video information')
+        toast.error('加载视频信息失败')
       } finally {
         setLoading(false)
       }
@@ -157,7 +157,7 @@ function VideoInfo({ videoIndex }: VideoInfoProps) {
   return (
     <section className="w-full h-full bg-white1 dark:bg-black1 p-6">
       <Tabs
-        aria-label="Video Information"
+        aria-label="视频信息"
         size="sm"
         selectedKey={tab}
         onSelectionChange={(t) => setTab(t as keyof typeof TABS)}
@@ -212,7 +212,7 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
       {info.filename ? (
         <>
           <InfoItem
-            label="Full Path"
+            label="完整路径"
             value={
               <Code size="sm" className="text-xs max-w-[100%] truncate">
                 {info.filename}
@@ -225,14 +225,14 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
 
       {info.formatName ? (
         <>
-          <InfoItem label="Format Name" value={info.formatName} />
+          <InfoItem label="格式名称" value={info.formatName} />
           <Divider className="my-1" />
         </>
       ) : null}
 
       {info.formatLongName ? (
         <>
-          <InfoItem label="Format" value={info.formatLongName} />
+          <InfoItem label="格式" value={info.formatLongName} />
           <Divider className="my-1" />
         </>
       ) : null}
@@ -240,7 +240,7 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
       {info.duration ? (
         <>
           <InfoItem
-            label="Duration"
+            label="时长"
             value={`${formatDuration(info.duration)}`}
           />
           <Divider className="my-1" />
@@ -249,7 +249,7 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
 
       {info.size > 0 ? (
         <>
-          <InfoItem label="Size" value={formatBytes(info.size)} />
+          <InfoItem label="大小" value={formatBytes(info.size)} />
           <Divider className="my-1" />
         </>
       ) : null}
@@ -257,7 +257,7 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
       {info.bitRate ? (
         <>
           <InfoItem
-            label="Bitrate"
+            label="比特率"
             value={`${(info.bitRate / 1000).toFixed(0)} kbps`}
           />
           <Divider className="my-1" />
@@ -266,14 +266,14 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
 
       {info.nbStreams > 0 ? (
         <>
-          <InfoItem label="Total Streams" value={info.nbStreams.toString()} />
+          <InfoItem label="流总数" value={info.nbStreams.toString()} />
           <Divider className="my-1" />
         </>
       ) : null}
 
       {info.tags && info.tags.length > 0 ? (
         <div>
-          <InfoItem label="Metadata Tags" value=" " />
+          <InfoItem label="元数据标签" value=" " />
           <div className="mt-2 space-y-2 mx-4">
             {info.tags.map(([key, value]) => (
               <div key={key}>
@@ -281,7 +281,7 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
                   {startCase(key)}:
                 </p>{' '}
                 <span className="text-zinc-800 dark:text-zinc-200 allow-user-selection text-[13px]">
-                  {value ?? 'N/A'}
+                  {value ?? '无'}
                 </span>
                 <Divider className="mt-2" />
               </div>
@@ -305,29 +305,29 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary">
-            Video Stream {streams.length > 1 ? `${index + 1}` : ''}
+            视频流 {streams.length > 1 ? `${index + 1}` : ''}
           </h3>
 
           <InfoItem
-            label="Codec"
-            value={`${stream.codec} (${stream.codecLongName ?? 'N/A'})`}
+            label="编码"
+            value={`${stream.codec} (${stream.codecLongName ?? '无'})`}
           />
           <Divider className="my-3" />
 
           {stream.profile && (
             <>
-              <InfoItem label="Profile" value={stream.profile} />
+              <InfoItem label="配置" value={stream.profile} />
               <Divider className="my-3" />
             </>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <InfoItem label="Width" value={`${stream.width ?? '-'}px`} />
+              <InfoItem label="宽度" value={`${stream.width ?? '-'}px`} />
               <Divider className="my-3" />
             </div>
             <div>
-              <InfoItem label="Height" value={`${stream.height ?? '-'}px`} />
+              <InfoItem label="高度" value={`${stream.height ?? '-'}px`} />
               <Divider className="my-3" />
             </div>
           </div>
@@ -340,14 +340,14 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <InfoItem
-                    label="Coded Width"
+                    label="编码宽度"
                     value={`${stream.codedWidth ?? '-'}px`}
                   />
                   <Divider className="my-3" />
                 </div>
                 <div>
                   <InfoItem
-                    label="Coded Height"
+                    label="编码高度"
                     value={`${stream.codedHeight ?? '-'}px`}
                   />
                   <Divider className="my-3" />
@@ -358,56 +358,56 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <InfoItem label="Frame Rate" value={stream.rFrameRate} />
+              <InfoItem label="帧率" value={stream.rFrameRate} />
               <Divider className="my-3" />
             </div>
             <div>
-              <InfoItem label="Avg Frame Rate" value={stream.avgFrameRate} />
+              <InfoItem label="平均帧率" value={stream.avgFrameRate} />
               <Divider className="my-3" />
             </div>
           </div>
 
-          <InfoItem label="Pixel Format" value={stream.pixFmt} />
+          <InfoItem label="像素格式" value={stream.pixFmt} />
           <Divider className="my-3" />
 
           {stream.colorSpace ? (
             <>
-              <InfoItem label="Color Space" value={stream.colorSpace} />
+              <InfoItem label="色彩空间" value={stream.colorSpace} />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.colorRange ? (
             <>
-              <InfoItem label="Color Range" value={stream.colorRange} />
+              <InfoItem label="色彩范围" value={stream.colorRange} />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.colorPrimaries ? (
             <>
-              <InfoItem label="Color Primaries" value={stream.colorPrimaries} />
+              <InfoItem label="色彩原色" value={stream.colorPrimaries} />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.colorTransfer ? (
             <>
-              <InfoItem label="Color Transfer" value={stream.colorTransfer} />
+              <InfoItem label="色彩传输" value={stream.colorTransfer} />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.chromaLocation ? (
             <>
-              <InfoItem label="Chroma Location" value={stream.chromaLocation} />
+              <InfoItem label="色度位置" value={stream.chromaLocation} />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.bitRate ? (
             <>
-              <InfoItem label="Bitrate" value={stream.bitRate} />
+              <InfoItem label="比特率" value={stream.bitRate} />
               <Divider className="my-3" />
             </>
           ) : null}
@@ -415,7 +415,7 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
           {stream.duration ? (
             <>
               <InfoItem
-                label="Duration"
+                label="时长"
                 value={formatDuration(+stream.duration)}
               />
               <Divider className="my-3" />
@@ -424,7 +424,7 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
 
           {stream.nbFrames ? (
             <>
-              <InfoItem label="Total Frames" value={stream.nbFrames} />
+              <InfoItem label="总帧数" value={stream.nbFrames} />
               <Divider className="my-3" />
             </>
           ) : null}
@@ -432,7 +432,7 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
           {stream.refs ? (
             <>
               <InfoItem
-                label="Reference Frames"
+                label="参考帧"
                 value={stream.refs.toString()}
               />
               <Divider className="my-3" />
@@ -441,35 +441,35 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
 
           {stream.gopSize ? (
             <>
-              <InfoItem label="GOP Size" value={stream.gopSize.toString()} />
+              <InfoItem label="GOP 大小" value={stream.gopSize.toString()} />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.level ? (
             <>
-              <InfoItem label="Codec Level" value={stream.level.toString()} />
+              <InfoItem label="编码级别" value={stream.level.toString()} />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.fieldOrder && stream.fieldOrder !== 'progressive' ? (
             <>
-              <InfoItem label="Field Order" value={stream.fieldOrder} />
+              <InfoItem label="扫描顺序" value={stream.fieldOrder} />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.timeBase && stream.timeBase !== '0/0' ? (
             <>
-              <InfoItem label="Time Base" value={stream.timeBase} />
+              <InfoItem label="时间基" value={stream.timeBase} />
               <Divider className="my-3" />
             </>
           ) : null}
 
           {stream.rotation && stream.rotation !== 0 ? (
             <>
-              <InfoItem label="Rotation" value={`${stream.rotation}°`} />
+              <InfoItem label="旋转" value={`${stream.rotation}°`} />
               <Divider className="my-3" />
             </>
           ) : null}
@@ -482,7 +482,7 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
 function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
   if (streams.length === 0) {
     return (
-      <p className="text-center text-zinc-500 py-8">No audio streams found</p>
+      <p className="text-center text-zinc-500 py-8">未找到音频流</p>
     )
   }
 
@@ -497,28 +497,28 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           className="space-y-4"
         >
           <h3 className="text-lg font-semibold text-primary">
-            Audio Stream {streams.length > 1 ? `${index + 1}` : ''}
+            音频流 {streams.length > 1 ? `${index + 1}` : ''}
           </h3>
 
           <InfoItem
-            label="Codec"
-            value={`${upperCase(stream.codec ?? 'N/A')} / ${stream.codecLongName ?? 'N/A'}`}
+            label="编码"
+            value={`${upperCase(stream.codec ?? '无')} / ${stream.codecLongName ?? '无'}`}
           />
           <Divider className="my-3" />
 
           {stream.profile ? (
             <>
-              <InfoItem label="Profile" value={stream.profile} />
+              <InfoItem label="配置" value={stream.profile} />
               <Divider className="my-3" />
             </>
           ) : null}
 
-          <InfoItem label="Channels" value={stream.channels} />
+          <InfoItem label="声道数" value={stream.channels} />
           <Divider className="my-3" />
 
           {stream.channelLayout ? (
             <>
-              <InfoItem label="Channel Layout" value={stream.channelLayout} />
+              <InfoItem label="声道布局" value={stream.channelLayout} />
               <Divider className="my-3" />
             </>
           ) : null}
@@ -526,8 +526,8 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           {stream.sampleRate ? (
             <>
               <InfoItem
-                label="Sample Rate"
-                value={`${stream.sampleRate ?? 'N/A'} Hz`}
+                label="采样率"
+                value={`${stream.sampleRate ?? '无'} Hz`}
               />
               <Divider className="my-3" />
             </>
@@ -535,7 +535,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
 
           {stream.sampleFmt ? (
             <>
-              <InfoItem label="Sample Format" value={stream.sampleFmt} />
+              <InfoItem label="采样格式" value={stream.sampleFmt} />
               <Divider className="my-3" />
             </>
           ) : null}
@@ -543,7 +543,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           {stream.bitsPerSample ? (
             <>
               <InfoItem
-                label="Bits Per Sample"
+                label="每样本位数"
                 value={stream.bitsPerSample.toString()}
               />
               <Divider className="my-3" />
@@ -553,7 +553,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           {stream.bitRate ? (
             <>
               <InfoItem
-                label="Bitrate"
+                label="比特率"
                 value={`${formatBytes(+stream.bitRate).toLowerCase?.() ?? '-'}ps (${stream.bitRate})`}
               />
               <Divider className="my-3" />
@@ -563,7 +563,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           {stream.duration ? (
             <>
               <InfoItem
-                label="Duration"
+                label="时长"
                 value={formatDuration(+stream.duration)}
               />
               <Divider className="my-3" />
@@ -572,7 +572,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
 
           {stream.tags && stream.tags.length > 0 ? (
             <div>
-              <InfoItem label="Metadata Tags" value=" " />
+              <InfoItem label="元数据标签" value=" " />
               <div className="mt-2 space-y-2 mx-4">
                 {stream.tags.map(([key, value]) => (
                   <div key={key}>
@@ -629,7 +629,7 @@ function SubtitleStreamsDisplay({
   if (streams.length === 0) {
     return (
       <p className="text-center text-zinc-500 py-8">
-        No subtitle streams found
+        未找到字幕流
       </p>
     )
   }
@@ -640,7 +640,7 @@ function SubtitleStreamsDisplay({
     format: SubtitleFormat,
   ) => {
     if (!videoPath) {
-      toast.error('Video path not available')
+      toast.error('视频路径不可用')
       return
     }
 
@@ -668,9 +668,9 @@ function SubtitleStreamsDisplay({
 
       await extractSubtitle(videoPath, stream.index, filePath, format)
 
-      toast.success(`Subtitle extracted and saved as ${format.toUpperCase()}.`)
+      toast.success(`字幕已提取并保存为 ${format.toUpperCase()}。`)
     } catch {
-      toast.error('Failed to extract subtitle.')
+      toast.error('提取字幕失败。')
     } finally {
       setDownloadingIndex(null)
     }
@@ -691,7 +691,7 @@ function SubtitleStreamsDisplay({
           >
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-primary">
-                Subtitle Stream {index + 1}
+                字幕流 {index + 1}
               </h3>
               <ButtonGroup variant="flat" size="sm">
                 <Button
@@ -710,10 +710,10 @@ function SubtitleStreamsDisplay({
                   }
                 >
                   {downloadingIndex === index
-                    ? 'Downloading...'
+                    ? '下载中...'
                     : !isExtractable
-                      ? 'Unsupported'
-                      : `Download as ${formatConfig.name}`}
+                      ? '不支持'
+                      : `下载为 ${formatConfig.name}`}
                 </Button>
                 <Dropdown size="sm">
                   <DropdownTrigger>
@@ -723,7 +723,7 @@ function SubtitleStreamsDisplay({
                   </DropdownTrigger>
                   <DropdownMenu
                     disallowEmptySelection
-                    aria-label="Subtitle format"
+                    aria-label="字幕格式"
                     selectedKeys={new Set([selectedFormat])}
                     selectionMode="single"
                     onSelectionChange={(keys) => {
@@ -743,28 +743,26 @@ function SubtitleStreamsDisplay({
             </div>
 
             <InfoItem
-              label="Codec"
+              label="编码"
               value={`${stream.codec} (${stream.codecLongName})`}
             />
             {!isExtractable && (
               <p className="text-xs text-amber-600 dark:text-amber-400">
-                ⚠️ This subtitle format ({stream.codec}) cannot be converted to
-                SRT. It is likely an image-based format (e.g., Blu-ray PGS or
-                DVD VobSub).
+                ⚠️ 当前字幕格式（{stream.codec}）无法转换为 SRT，可能是图像类字幕格式（如 Blu-ray PGS 或 DVD VobSub）。
               </p>
             )}
             <Divider className="my-3" />
 
             {stream.language ? (
               <>
-                <InfoItem label="Language" value={stream.language} />
+                <InfoItem label="语言" value={stream.language} />
                 <Divider className="my-3" />
               </>
             ) : null}
 
             {stream.title ? (
               <>
-                <InfoItem label="Title" value={stream.title} />
+                <InfoItem label="标题" value={stream.title} />
                 <Divider className="my-3" />
               </>
             ) : null}
@@ -776,36 +774,36 @@ function SubtitleStreamsDisplay({
             stream.disposition.karaoke ||
             stream.disposition.lyrics ? (
               <div>
-                <InfoItem label="Disposition" value=" " />
+                <InfoItem label="处置标记" value=" " />
                 <div className="mt-2 space-y-1 ml-4">
                   {stream.disposition.default ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Default
+                      - 默认
                     </div>
                   ) : null}
                   {stream.disposition.forced ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Forced
+                      - 强制
                     </div>
                   ) : null}
                   {stream.disposition.attached_pic ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Attached Picture
+                      - 附加图片
                     </div>
                   ) : null}
                   {stream.disposition.comment ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Comment
+                      - 注释
                     </div>
                   ) : null}
                   {stream.disposition.karaoke ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Karaoke
+                      - 卡拉 OK
                     </div>
                   ) : null}
                   {stream.disposition.lyrics ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
-                      - Lyrics
+                      - 歌词
                     </div>
                   ) : null}
                 </div>
@@ -820,7 +818,7 @@ function SubtitleStreamsDisplay({
 
 function ChaptersDisplay({ chapters }: { chapters: Chapter[] }) {
   if (chapters.length === 0) {
-    return <p className="text-center text-zinc-500 py-8">No chapters found</p>
+    return <p className="text-center text-zinc-500 py-8">未找到章节信息</p>
   }
 
   return (
@@ -834,7 +832,7 @@ function ChaptersDisplay({ chapters }: { chapters: Chapter[] }) {
         >
           <div className="flex items-start justify-between">
             <h3 className="text-lg font-semibold text-primary">
-              Chapter {index + 1} {chapter.id ? `(#${chapter.id})` : ''}
+              章节 {index + 1} {chapter.id ? `(#${chapter.id})` : ''}
             </h3>
             {chapter.title && (
               <span className="text-sm text-zinc-600 dark:text-zinc-400 ml-4">
@@ -844,21 +842,21 @@ function ChaptersDisplay({ chapters }: { chapters: Chapter[] }) {
           </div>
 
           <div className="mt-3 space-y-4">
-            <InfoItem label="Start" value={`${chapter.start.toFixed(2)}s`} />
+            <InfoItem label="开始" value={`${chapter.start.toFixed(2)}s`} />
             <Divider className="my-3" />
 
-            <InfoItem label="End" value={`${chapter.end.toFixed(2)}s`} />
+            <InfoItem label="结束" value={`${chapter.end.toFixed(2)}s`} />
             <Divider className="my-3" />
 
             <InfoItem
-              label="Duration"
+              label="时长"
               value={`${formatDuration(chapter.end - chapter.start)}`}
             />
             <Divider className="my-3" />
 
             {chapter.timeBase && chapter.timeBase !== '0/0' ? (
               <>
-                <InfoItem label="Time Base" value={chapter.timeBase} />
+                <InfoItem label="时间基" value={chapter.timeBase} />
                 <Divider className="my-3" />
               </>
             ) : null}
@@ -876,7 +874,7 @@ function InfoItem({ label, value }: { label: string; value: React.ReactNode }) {
         {label}:
       </span>
       <span className="text-[13px] text-zinc-800 dark:text-zinc-200 ml-2 allow-user-selection max-w-[75%] text-end">
-        {value || 'N/A'}
+        {value || '无'}
       </span>
     </div>
   )

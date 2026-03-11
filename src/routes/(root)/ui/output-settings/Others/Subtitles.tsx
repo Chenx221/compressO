@@ -23,19 +23,19 @@ type SubtitlesProps = {
 const SUBTITLE_EXTENSIONS = ['srt']
 
 const LANGUAGE_OPTIONS: { code: string; name: string }[] = [
-  { code: 'eng', name: 'English' },
-  { code: 'spa', name: 'Spanish' },
-  { code: 'fre', name: 'French' },
-  { code: 'deu', name: 'German' },
-  { code: 'ita', name: 'Italian' },
-  { code: 'por', name: 'Portuguese' },
-  { code: 'rus', name: 'Russian' },
-  { code: 'jpn', name: 'Japanese' },
-  { code: 'kor', name: 'Korean' },
-  { code: 'chi', name: 'Chinese' },
-  { code: 'ara', name: 'Arabic' },
-  { code: 'hin', name: 'Hindi' },
-  { code: 'und', name: 'Unknown' },
+  { code: 'eng', name: '英语' },
+  { code: 'spa', name: '西班牙语' },
+  { code: 'fre', name: '法语' },
+  { code: 'deu', name: '德语' },
+  { code: 'ita', name: '意大利语' },
+  { code: 'por', name: '葡萄牙语' },
+  { code: 'rus', name: '俄语' },
+  { code: 'jpn', name: '日语' },
+  { code: 'kor', name: '韩语' },
+  { code: 'chi', name: '中文' },
+  { code: 'ara', name: '阿拉伯语' },
+  { code: 'hin', name: '印地语' },
+  { code: 'und', name: '未知' },
 ]
 
 function Subtitles({ videoIndex }: SubtitlesProps) {
@@ -135,7 +135,7 @@ function Subtitles({ videoIndex }: SubtitlesProps) {
       const filePath = await open({
         directory: false,
         multiple: false,
-        title: 'Select subtitle file (SRT)',
+        title: '选择字幕文件（SRT）',
         filters: [
           {
             name: 'subtitle',
@@ -182,7 +182,7 @@ function Subtitles({ videoIndex }: SubtitlesProps) {
         }
       }
     } catch (error: any) {
-      toast.error(error?.message ?? 'Could not select subtitle file.')
+      toast.error(error?.message ?? '无法选择字幕文件。')
     }
   }, [videoIndex])
 
@@ -251,7 +251,7 @@ function Subtitles({ videoIndex }: SubtitlesProps) {
           >
             <div className="flex justify-center items-center">
               <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm font-bold">
-                Subtitles
+                字幕
               </span>
             </div>
           </Switch>
@@ -267,7 +267,7 @@ function Subtitles({ videoIndex }: SubtitlesProps) {
                   size="sm"
                 >
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Preserve existing subtitles
+                    保留已有字幕
                   </span>
                 </Switch>
               </div>
@@ -287,13 +287,13 @@ function Subtitles({ videoIndex }: SubtitlesProps) {
                       className="mb-2 p-3 bg-default-50 rounded-xl border border-default-200 dark:border-default-100"
                     >
                       <div className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate mb-2 text-center">
-                        {subtitle.fileName || `Subtitle ${index + 1}`}
+                        {subtitle.fileName || `字幕 ${index + 1}`}
                       </div>
                       <div className="flex items-center justify-center gap-2">
                         <div className="flex-1 min-w-0">
                           <Select
                             fullWidth
-                            label="Language"
+                            label="语言"
                             size="sm"
                             selectedKeys={[
                               getDisplayLanguageCode(
@@ -349,13 +349,13 @@ function Subtitles({ videoIndex }: SubtitlesProps) {
                 isDisabled={shouldDisableInput || isDisabledForWebm}
                 className="mt-2"
               >
-                Add Subtitle Track
+                添加字幕轨道
                 <Icon name="fileExplorer" size={14} />
               </Button>
 
               {isDisabledForWebm ? (
                 <p className="text-xs italic text-danger-300 mt-2">
-                  webm does not support soft subtitles
+                  webm 不支持软字幕
                 </p>
               ) : null}
             </motion.div>

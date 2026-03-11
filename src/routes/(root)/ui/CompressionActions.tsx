@@ -55,7 +55,7 @@ function CompressionActions() {
     <>
       <div className="w-fit flex justify-center items-center z-[10]">
         {isProcessCompleted ? (
-          <Tooltip content="Reset" aria-label="Reset">
+          <Tooltip content="重置" aria-label="重置">
             <Button
               size="sm"
               onPress={handleReconfigure}
@@ -69,7 +69,7 @@ function CompressionActions() {
             </Button>
           </Tooltip>
         ) : null}
-        <Tooltip content="Exit" aria-label="Exit">
+        <Tooltip content="退出" aria-label="退出">
           <Button
             size="sm"
             onPress={handleCancelCompression}
@@ -84,17 +84,17 @@ function CompressionActions() {
         </Tooltip>
       </div>
       <AlertDialog
-        title={`Video${videos.length > 1 ? 's' : ''} not saved`}
+        title={`视频${videos.length > 1 ? '尚未保存' : '尚未保存'}`}
         discloser={alertDiscloser}
-        description={`Your compressed video${videos.length > 1 ? 's are' : ' is'} not yet saved. Are you sure you want to discard it?`}
+        description={`压缩后的视频${videos.length > 1 ? '尚未保存' : '尚未保存'}，确定要丢弃吗？`}
         renderFooter={({ closeModal }) => (
           <>
-            <AlertDialogButton onPress={closeModal}>Go Back</AlertDialogButton>
+            <AlertDialogButton onPress={closeModal}>返回</AlertDialogButton>
             <AlertDialogButton
               color="danger"
               onPress={() => handleDiscard({ closeModal })}
             >
-              Yes
+              确定
             </AlertDialogButton>
           </>
         )}

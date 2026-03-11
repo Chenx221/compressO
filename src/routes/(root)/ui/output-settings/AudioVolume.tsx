@@ -101,13 +101,13 @@ function AudioVolume({ videoIndex }: AudioVolumeProps) {
   return (
     <>
       <Slider
-        label="Volume:"
-        aria-label="Audio Volume"
+        label="音量："
+        aria-label="音频音量"
         maxValue={200}
         marks={[
           {
             value: 0,
-            label: 'Mute',
+            label: '静音',
           },
           {
             value: 100,

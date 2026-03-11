@@ -133,7 +133,7 @@ function Metadata({ videoIndex }: MetadataProps) {
       >
         <div className="flex justify-center items-center">
           <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm font-bold">
-            Preserve Metadata
+            保留元数据
           </span>
         </div>
       </Switch>
@@ -143,17 +143,17 @@ function Metadata({ videoIndex }: MetadataProps) {
             <motion.div {...slideDownTransition} className="space-y-4 mt-2">
               <div className="text-zinc-700 dark:text-zinc-400">
                 <p className="text-xs  italic">
-                  - Leave the field empty to keep the original
+                  - 留空表示保留原值
                 </p>{' '}
                 <p className="text-xs  italic">
-                  - Or, add a whitespace to remove the original
+                  - 输入一个空格表示移除原值
                 </p>
               </div>
               <div>
                 <TextInput
                   type="text"
-                  label="Title"
-                  placeholder="Enter video title"
+                  label="标题"
+                  placeholder="请输入视频标题"
                   value={metadataConfig?.title ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) => updateMetadataField('title', value)}
@@ -164,8 +164,8 @@ function Metadata({ videoIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Artist"
-                  placeholder="Enter artist name"
+                  label="艺术家"
+                  placeholder="请输入艺术家名称"
                   value={metadataConfig?.artist ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -178,8 +178,8 @@ function Metadata({ videoIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Album"
-                  placeholder="Enter album name"
+                  label="专辑"
+                  placeholder="请输入专辑名称"
                   value={metadataConfig?.album ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) => updateMetadataField('album', value)}
@@ -190,8 +190,8 @@ function Metadata({ videoIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Genre"
-                  placeholder="Enter genre"
+                  label="流派"
+                  placeholder="请输入流派"
                   value={metadataConfig?.genre ?? ''}
                   isDisabled={shouldDisableInput}
                   classNames={{ mainWrapper: 'my-3' }}
@@ -202,8 +202,8 @@ function Metadata({ videoIndex }: MetadataProps) {
               <div>
                 <TextInput
                   type="text"
-                  label="Year/Date"
-                  placeholder="Enter year or date"
+                  label="年份/日期"
+                  placeholder="请输入年份或日期"
                   value={metadataConfig?.year ?? ''}
                   isDisabled={shouldDisableInput}
                   classNames={{ mainWrapper: 'my-3' }}
@@ -214,8 +214,8 @@ function Metadata({ videoIndex }: MetadataProps) {
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
-                  label="Description"
-                  placeholder="Enter description"
+                  label="描述"
+                  placeholder="请输入描述"
                   value={metadataConfig?.description ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -228,8 +228,8 @@ function Metadata({ videoIndex }: MetadataProps) {
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
-                  label="Synopsis"
-                  placeholder="Enter synopsis"
+                  label="简介"
+                  placeholder="请输入简介"
                   value={metadataConfig?.synopsis ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -242,8 +242,8 @@ function Metadata({ videoIndex }: MetadataProps) {
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
-                  label="Comment"
-                  placeholder="Enter comment"
+                  label="备注"
+                  placeholder="请输入备注"
                   value={metadataConfig?.comment ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -256,8 +256,8 @@ function Metadata({ videoIndex }: MetadataProps) {
               <div className="!mt-[-10px]">
                 <TextArea
                   type="text"
-                  label="Copyright"
-                  placeholder="Enter copyright information"
+                  label="版权信息"
+                  placeholder="请输入版权信息"
                   value={metadataConfig?.copyright ?? ''}
                   isDisabled={shouldDisableInput}
                   onValueChange={(value) =>
@@ -286,7 +286,7 @@ function Metadata({ videoIndex }: MetadataProps) {
                   >
                     <div className="flex justify-center items-center">
                       <span className="text-black1 dark:text-white1 block mr-2 text-xs opacity-90">
-                        Creation Time
+                        创建时间
                       </span>
                     </div>
                   </Switch>
@@ -297,7 +297,7 @@ function Metadata({ videoIndex }: MetadataProps) {
                     hideTimeZone
                     showMonthAndYearPickers
                     label=""
-                    placeholder="Enter creation time"
+                    placeholder="请输入创建时间"
                     isDisabled={
                       shouldDisableInput ||
                       !metadataConfig?.shouldEnableCreationTime

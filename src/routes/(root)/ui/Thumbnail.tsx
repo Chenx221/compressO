@@ -71,7 +71,7 @@ function VideoThumbnail({ videoIndex }: VideoThumbnailProps) {
 
   const handleCopyCurrentFrame = useCallback(async () => {
     if (!videoPathRaw || !videoDuration || !playerRef.current) {
-      toast.error('Unable to copy frame')
+      toast.error('无法复制当前帧')
       return
     }
 
@@ -90,9 +90,9 @@ function VideoThumbnail({ videoIndex }: VideoThumbnailProps) {
       const result = await generateVideoThumbnail(videoPathRaw, timestamp)
 
       await copyFileToClipboard(result.filePath)
-      toast.success('Frame copied to clipboard')
+      toast.success('当前帧已复制到剪贴板')
     } catch {
-      toast.error('Failed to copy frame to clipboard')
+      toast.error('复制当前帧到剪贴板失败')
     } finally {
       setIsCopyingFrame(false)
     }
@@ -291,7 +291,7 @@ function VideoThumbnail({ videoIndex }: VideoThumbnailProps) {
                     disabled={isCopyingFrame}
                   >
                     <Icon name="copy" size={20} />
-                    <span>Copy current frame</span>
+                    <span>复制当前帧</span>
                   </button>
                 </div>
               ) : null
@@ -314,7 +314,7 @@ function VideoThumbnail({ videoIndex }: VideoThumbnailProps) {
             }}
             disableClosedCaptions
             onError={() => {
-              toast.warning('Switching to image thumbnail...')
+              toast.warning('正在切换到图片缩略图...')
               appProxy.state.videos[videoIndex].previewMode = 'image'
             }}
             onProgress={({ playedSeconds }: OnProgressProps) => {
@@ -349,7 +349,7 @@ function VideoThumbnail({ videoIndex }: VideoThumbnailProps) {
         ) : (
           <div className="relative w-fit mx-auto">
             <Image
-              alt="video to compress"
+              alt="待压缩视频"
               src={thumbnailPath as string}
               className="object-contain rounded-3xl max-h-[65vh] border-1 border-primary"
               onError={() => {
@@ -360,7 +360,7 @@ function VideoThumbnail({ videoIndex }: VideoThumbnailProps) {
             />
             {videoDuration && !isProcessCompleted ? (
               <div className="absolute bottom-4 right-4 z-[10]">
-                <Tooltip content="Regenerate Thumbnail">
+                <Tooltip content="重新生成缩略图">
                   <Button
                     size="sm"
                     isIconOnly
