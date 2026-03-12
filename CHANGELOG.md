@@ -1,12 +1,20 @@
 # Changelog
 
+### 2.1.1
+Enhancements:
+- Make configuration settings label font weight bold for better visibility [5fcb190](https://github.com/codeforreal1/compressO/commit/5fcb1903c1f119d55fd54a2ddc43863dafd79f08)
+
+Bug Fixes:
+- Fix duration format missing showing hour duration [14f2b0d](https://github.com/codeforreal1/compressO/commit/14f2b0d485f11bc89b8897fe4436a97babfdff2f)
+- Fix app About color issues [5fcb190](https://github.com/codeforreal1/compressO/commit/5fcb1903c1f119d55fd54a2ddc43863dafd79f08)
+
 ### 2.1.0
 
 Features:
 - Subtitle Upload: You can now upload single or multiple subtitle and embed in the final output video. You can upload subtitles from `Others` tab.
 - Download Embedded Subtitle from the video: You can also download the embedded subtitles of the video in SRT or VTT format. You can download these subtitles from `Subtitles` tab of the full video info overlay.
 - Theme Color: You can customize the color of the app to your liking. The selected color will be applied to everywhere on the app.
-- Audio Amplification: You can now amplify the volume upto 200% of the original audio.
+- Audio Amplification: You can now amplify the volume up-to 200% of the original audio.
 - Capture Current Frame: You can now capture the current frame from the video player and copy it to the clipboard. Just right click on the video player and the context menu will show up to do so.
 - Progress % in Dock: MacOS dock icon now shows progress % during processing.
 

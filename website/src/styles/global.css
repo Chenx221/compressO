@@ -275,7 +275,7 @@ hr {
 
 .hero h1,
 .hero .title {
-  font-size: clamp(48px, 10vw, 80px);
+  font-size: clamp(48px, 10vw, 75px);
   line-height: 1.1;
   letter-spacing: -0.02em;
   font-weight: 700;
