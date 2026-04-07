@@ -17,6 +17,7 @@ import Code from '@/components/Code'
 import Divider from '@/components/Divider'
 import Dropdown from '@/components/Dropdown'
 import Icon from '@/components/Icon'
+import Popover, { PopoverContent, PopoverTrigger } from '@/components/Popover'
 import ScrollShadow from '@/components/ScrollShadow'
 import Spinner from '@/components/Spinner'
 import Tabs from '@/components/Tabs'
@@ -40,7 +41,8 @@ import { formatDuration } from '@/utils/string'
 import { appProxy } from '../-state'
 
 type VideoInfoProps = {
-  videoIndex: number
+  mediaIndex: number
+  onClose?: () => void
 }
 
 const TABS = {
@@ -64,16 +66,23 @@ const TABS = {
     id: 'chapters',
     title: '章节',
   },
+  metadata: {
+    id: 'metadata',
+    title: '元数据标签',
+  },
 } as const
 
-function VideoInfo({ videoIndex }: VideoInfoProps) {
-  if (videoIndex < 0) return null
+function VideoInfo({ mediaIndex, onClose }: VideoInfoProps) {
+  if (mediaIndex < 0) return null
 
   const {
-    state: { videos },
+    state: { media },
   } = useSnapshot(appProxy)
 
-  const video = videos.length && videoIndex >= 0 ? videos[videoIndex] : null
+  const video =
+    media.length && mediaIndex >= 0 && media[mediaIndex].type === 'video'
+      ? media[mediaIndex]
+      : null
   const { pathRaw: videoPathRaw, videoInfoRaw } = video ?? {}
   if (!video) return null
 
@@ -82,9 +91,9 @@ function VideoInfo({ videoIndex }: VideoInfoProps) {
 
   const fetchTabData = useCallback(
     async (tabKey: keyof typeof TABS) => {
-      const video = appProxy.state.videos[videoIndex]
+      const video = appProxy.state.media[mediaIndex]
 
-      if (!videoPathRaw || !video) {
+      if (!videoPathRaw || !video || video.type !== 'video') {
         return
       }
 
@@ -140,34 +149,59 @@ function VideoInfo({ videoIndex }: VideoInfoProps) {
             }
             break
           }
+          case 'metadata': {
+            if (!video?.videoInfoRaw?.containerInfo) {
+              const data = await getContainerInfo(videoPathRaw)
+              if (data) {
+                video.videoInfoRaw.containerInfo = data
+              }
+            }
+            break
+          }
         }
       } catch {
-        toast.error('加载视频信息失败')
+        //
       } finally {
         setLoading(false)
       }
     },
-    [videoPathRaw, videoIndex],
+    [videoPathRaw, mediaIndex],
   )
 
   useEffect(() => {
     fetchTabData(tab)
   }, [tab, fetchTabData])
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose?.()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [onClose])
+
   return (
     <section className="w-full h-full bg-white1 dark:bg-black1 p-6">
-      <Tabs
-        aria-label="视频信息"
-        size="sm"
-        selectedKey={tab}
-        onSelectionChange={(t) => setTab(t as keyof typeof TABS)}
-        className="w-full"
-        fullWidth
-      >
-        {Object.values(TABS).map((t) => (
-          <Tab key={t.id} value={t.id} title={t.title} />
-        ))}
-      </Tabs>
+      <div className="w-full flex justify-center">
+        <Tabs
+          aria-label="视频信息"
+          size="sm"
+          selectedKey={tab}
+          onSelectionChange={(t) => setTab(t as keyof typeof TABS)}
+          classNames={{
+            tabContent: 'text-[11px]',
+            tab: 'h-6',
+          }}
+        >
+          {Object.values(TABS).map((t) => (
+            <Tab key={t.id} value={t.id} title={t.title} />
+          ))}
+        </Tabs>
+      </div>
 
       <ScrollShadow
         className="mt-6 overflow-y-auto max-h-[calc(100vh-200px)] pb-10"
@@ -201,6 +235,10 @@ function VideoInfo({ videoIndex }: VideoInfoProps) {
             videoPath={videoPathRaw}
           />
         ) : null}
+
+        {!loading && tab === 'metadata' && videoInfoRaw?.containerInfo ? (
+          <MetadataDisplay info={videoInfoRaw?.containerInfo as any} />
+        ) : null}
       </ScrollShadow>
     </section>
   )
@@ -208,7 +246,7 @@ function VideoInfo({ videoIndex }: VideoInfoProps) {
 
 function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 select-text">
       {info.filename ? (
         <>
           <InfoItem
@@ -270,32 +308,41 @@ function ContainerInfoDisplay({ info }: { info: ContainerInfo }) {
           <Divider className="my-1" />
         </>
       ) : null}
+    </div>
+  )
+}
 
-      {info.tags && info.tags.length > 0 ? (
-        <div>
-          <InfoItem label="元数据标签" value=" " />
-          <div className="mt-2 space-y-2 mx-4">
-            {info.tags.map(([key, value]) => (
-              <div key={key}>
-                <p className="font-bold text-zinc-600 dark:text-zinc-400 text-[13px]">
-                  {startCase(key)}:
-                </p>{' '}
-                <span className="text-zinc-800 dark:text-zinc-200 allow-user-selection text-[13px]">
-                  {value ?? '无'}
-                </span>
-                <Divider className="mt-2" />
-              </div>
-            ))}
+function MetadataDisplay({ info }: { info: ContainerInfo }) {
+  if (!info.tags || info.tags.length === 0) {
+    return (
+      <p className="text-center text-zinc-500 py-8 select-text">
+        未找到元数据标签
+      </p>
+    )
+  }
+
+  return (
+    <div className="space-y-4 select-text">
+      <div className="mt-2 space-y-2">
+        {info.tags.map(([key, value]) => (
+          <div key={key} className="select-text">
+            <p className="font-bold text-zinc-600 dark:text-zinc-400 text-[13px]">
+              {startCase(key)}:
+            </p>{' '}
+            <span className="text-zinc-800 dark:text-zinc-200 text-[13px]">
+              {value ?? '无'}
+            </span>
+            <Divider className="mt-2" />
           </div>
-        </div>
-      ) : null}
+        ))}
+      </div>
     </div>
   )
 }
 
 function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 select-text">
       {streams.map((stream, index) => (
         <motion.div
           key={index}
@@ -304,7 +351,7 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
           transition={{ delay: index * 0.05 }}
           className="space-y-4"
         >
-          <h3 className="text-lg font-semibold text-primary">
+          <h3 className="text-lg font-semibold text-primary select-text">
             视频流 {streams.length > 1 ? `${index + 1}` : ''}
           </h3>
 
@@ -482,12 +529,14 @@ function VideoStreamsDisplay({ streams }: { streams: VideoStream[] }) {
 function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
   if (streams.length === 0) {
     return (
-      <p className="text-center text-zinc-500 py-8">未找到音频流</p>
+      <p className="text-center text-zinc-500 py-8 select-text">
+        未找到音频流
+      </p>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 select-text">
       {streams.map((stream, index) => (
         <motion.div
           key={index}
@@ -496,7 +545,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
           transition={{ delay: index * 0.05 }}
           className="space-y-4"
         >
-          <h3 className="text-lg font-semibold text-primary">
+          <h3 className="text-lg font-semibold text-primary select-text">
             音频流 {streams.length > 1 ? `${index + 1}` : ''}
           </h3>
 
@@ -575,7 +624,7 @@ function AudioStreamsDisplay({ streams }: { streams: AudioStream[] }) {
               <InfoItem label="元数据标签" value=" " />
               <div className="mt-2 space-y-2 mx-4">
                 {stream.tags.map(([key, value]) => (
-                  <div key={key}>
+                  <div key={key} className="select-text">
                     <span className="font-medium text-zinc-600 dark:text-zinc-400 text-[13px]">
                       {startCase(key)}:
                     </span>{' '}
@@ -628,7 +677,7 @@ function SubtitleStreamsDisplay({
 
   if (streams.length === 0) {
     return (
-      <p className="text-center text-zinc-500 py-8">
+      <p className="text-center text-zinc-500 py-8 select-text">
         未找到字幕流
       </p>
     )
@@ -670,14 +719,14 @@ function SubtitleStreamsDisplay({
 
       toast.success(`字幕已提取并保存为 ${format.toUpperCase()}。`)
     } catch {
-      toast.error('提取字幕失败。')
+      //
     } finally {
       setDownloadingIndex(null)
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 select-text">
       {streams.map((stream, index) => {
         const isExtractable = isSubtitleExtractable(stream.codec)
         const formatConfig = SUBTITLE_FORMATS[selectedFormat]
@@ -690,67 +739,82 @@ function SubtitleStreamsDisplay({
             className="space-y-4"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-primary">
+              <h3 className="text-lg font-semibold text-primary select-text">
                 字幕流 {index + 1}
               </h3>
-              <ButtonGroup variant="flat" size="sm">
-                <Button
-                  radius="lg"
-                  onPress={() => handleDownload(stream, index, selectedFormat)}
-                  isDisabled={downloadingIndex === index || !isExtractable}
-                  color={!isExtractable ? 'default' : undefined}
-                  startContent={
-                    downloadingIndex === index ? (
-                      <Spinner size="sm" />
-                    ) : !isExtractable ? (
-                      <Icon name="cross" size={20} />
-                    ) : (
-                      <Icon name="download" size={20} />
-                    )
-                  }
-                >
-                  {downloadingIndex === index
-                    ? '下载中...'
-                    : !isExtractable
-                      ? '不支持'
-                      : `下载为 ${formatConfig.name}`}
-                </Button>
-                <Dropdown size="sm">
-                  <DropdownTrigger>
-                    <Button isIconOnly radius="lg">
-                      <Icon name="chevron" />
-                    </Button>
-                  </DropdownTrigger>
-                  <DropdownMenu
-                    disallowEmptySelection
-                    aria-label="字幕格式"
-                    selectedKeys={new Set([selectedFormat])}
-                    selectionMode="single"
-                    onSelectionChange={(keys) => {
-                      const format = Array.from(keys)[0] as SubtitleFormat
-                      setSelectedFormat(format)
-                    }}
+              <div className="flex items-center">
+                {!isExtractable ? (
+                  <Popover>
+                    <PopoverTrigger>
+                      <button>
+                        <Icon name="info" className="text-warning-400" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="max-w-xs">
+                      <p className="text-xs text-amber-600 dark:text-amber-400 select-text max-w-[250px]">
+                        该字幕格式 ({stream.codec}) 无法转换为 SRT。 
+                        它可能是图像格式（如 Blu-ray PGS 或 DVD VobSub），因此无法下载。
+                      </p>
+                    </PopoverContent>
+                  </Popover>
+                ) : null}
+
+                <ButtonGroup variant="flat" size="sm">
+                  <Button
+                    radius="lg"
+                    onPress={() =>
+                      handleDownload(stream, index, selectedFormat)
+                    }
+                    isDisabled={downloadingIndex === index || !isExtractable}
+                    color={!isExtractable ? 'default' : undefined}
+                    startContent={
+                      downloadingIndex === index ? (
+                        <Spinner size="sm" />
+                      ) : !isExtractable ? (
+                        <Icon name="cross" size={20} />
+                      ) : (
+                        <Icon name="download" size={20} />
+                      )
+                    }
                   >
-                    <DropdownItem key="srt">
-                      {SUBTITLE_FORMATS.srt.name}
-                    </DropdownItem>
-                    <DropdownItem key="vtt">
-                      {SUBTITLE_FORMATS.vtt.name}
-                    </DropdownItem>
-                  </DropdownMenu>
-                </Dropdown>
-              </ButtonGroup>
+                    {downloadingIndex === index
+                      ? '下载中...'
+                      : !isExtractable
+                        ? '不支持'
+                        : `下载为 ${formatConfig.name}`}
+                  </Button>
+                  <Dropdown size="sm">
+                    <DropdownTrigger>
+                      <Button isIconOnly radius="lg">
+                        <Icon name="chevron" />
+                      </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                      disallowEmptySelection
+                      aria-label="字幕格式"
+                      selectedKeys={new Set([selectedFormat])}
+                      selectionMode="single"
+                      onSelectionChange={(keys) => {
+                        const format = Array.from(keys)[0] as SubtitleFormat
+                        setSelectedFormat(format)
+                      }}
+                    >
+                      <DropdownItem key="srt">
+                        {SUBTITLE_FORMATS.srt.name}
+                      </DropdownItem>
+                      <DropdownItem key="vtt">
+                        {SUBTITLE_FORMATS.vtt.name}
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </Dropdown>
+                </ButtonGroup>
+              </div>
             </div>
 
             <InfoItem
               label="编码"
               value={`${stream.codec} (${stream.codecLongName})`}
             />
-            {!isExtractable && (
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                ⚠️ 当前字幕格式（{stream.codec}）无法转换为 SRT，可能是图像类字幕格式（如 Blu-ray PGS 或 DVD VobSub）。
-              </p>
-            )}
             <Divider className="my-3" />
 
             {stream.language ? (
@@ -769,11 +833,11 @@ function SubtitleStreamsDisplay({
 
             {stream.disposition.default ||
             stream.disposition.forced ||
-            stream.disposition.attached_pic ||
+            stream.disposition.attachedPic ||
             stream.disposition.comment ||
             stream.disposition.karaoke ||
             stream.disposition.lyrics ? (
-              <div>
+              <div className="select-text">
                 <InfoItem label="处置标记" value=" " />
                 <div className="mt-2 space-y-1 ml-4">
                   {stream.disposition.default ? (
@@ -786,7 +850,7 @@ function SubtitleStreamsDisplay({
                       - 强制
                     </div>
                   ) : null}
-                  {stream.disposition.attached_pic ? (
+                  {stream.disposition.attachedPic ? (
                     <div className="text-zinc-600 dark:text-zinc-400 text-xs">
                       - 附加图片
                     </div>
@@ -818,11 +882,15 @@ function SubtitleStreamsDisplay({
 
 function ChaptersDisplay({ chapters }: { chapters: Chapter[] }) {
   if (chapters.length === 0) {
-    return <p className="text-center text-zinc-500 py-8">未找到章节信息</p>
+    return (
+      <p className="text-center text-zinc-500 py-8 select-text">
+        未找到章节信息
+      </p>
+    )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 select-text">
       {chapters.map((chapter, index) => (
         <motion.div
           key={index}
@@ -830,7 +898,7 @@ function ChaptersDisplay({ chapters }: { chapters: Chapter[] }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.05 }}
         >
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between select-text">
             <h3 className="text-lg font-semibold text-primary">
               章节 {index + 1} {chapter.id ? `(#${chapter.id})` : ''}
             </h3>
@@ -869,11 +937,11 @@ function ChaptersDisplay({ chapters }: { chapters: Chapter[] }) {
 
 function InfoItem({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between !select-text !before:select-text">
+    <div className="flex items-baseline justify-between select-text">
       <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
         {label}:
       </span>
-      <span className="text-[13px] text-zinc-800 dark:text-zinc-200 ml-2 allow-user-selection max-w-[75%] text-end">
+      <span className="text-[13px] text-zinc-800 dark:text-zinc-200 ml-2 max-w-[75%] text-end">
         {value || '无'}
       </span>
     </div>

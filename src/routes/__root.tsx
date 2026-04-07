@@ -4,6 +4,7 @@ import { event } from '@tauri-apps/api'
 import { useEffect } from 'react'
 
 import { Toaster } from '@/components/Toast'
+import { checkForUpdates, setupUpdateListeners } from '@/stores/updateStore'
 import Titlebar from '@/tauri/components/Titlebar'
 import { getPlatform } from '@/utils/fs'
 import UIProvider from '../providers/UIProvider'
@@ -19,6 +20,8 @@ const { isMacOS } = getPlatform()
 function RootComponent() {
   useEffect(() => {
     event.emit('frontend-ready')
+    setupUpdateListeners()
+    checkForUpdates()
   }, [])
 
   return (

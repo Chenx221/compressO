@@ -4,10 +4,10 @@
   </div>
 	<h1 align="center">CompressO</h1>
 	<p align="center">
-		Compress any video into a tiny size.
+		Compress any video/image into a tiny size.
     </p>
     <i align="center">
-		CompressO (🔉 pronounced like "Espresso" ) is a free and open-sourced cross-platform video compression app powered by FFmpeg.
+		CompressO (🔉 pronounced like "Espresso" ) is a free and open-sourced cross-platform video/image compression app.
     </i>
     <br />
     <p align="center">
@@ -64,8 +64,8 @@ brew install --cask codeforreal1/tap/compresso
 
 ### Tech
 
-This app is created using [Tauri](https://tauri.app/), a Rust🦀 framework for building a cross-platform desktop app. It uses [Vite](https://vite.dev/) as a frontend layer. The compression is done entirely by [FFmpeg](https://ffmpeg.org/) using platform specific standalone binaries.
-The app works completely offline and no any network requests is made to/from the app.
+This app is created using [Tauri](https://tauri.app/), a Rust🦀 framework for building a cross-platform desktop app. It uses [Vite](https://vite.dev/) as a frontend layer. The compression is done entirely by 3rd part tools like [FFmpeg](https://ffmpeg.org/), [pngquant](https://pngquant.org/), [jpegoptim](https://github.com/tjko/jpegoptim), [gifski](https://gif.ski/), etc. using platform specific standalone binaries.
+The app works completely offline and no any network requests is made to/from the app(except for built-in app updates).
 
 ### Screenshots
 <details>
@@ -146,8 +146,6 @@ xattr -cr /Applications/CompressO.app
 
 ### License 🚨
 
-<a href="./LICENSE">AGPL 3.0 License</a>
+The project is licensed under <a href="./LICENSE">AGPL 3.0</a>
 
-<p className="block text-sm">
-This software uses libraries from the FFmpeg project under the LGPLv2.1.
-</p>
+This project bundles and uses third-party software. For complete third-party notices, licenses, and attributions, please see [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).

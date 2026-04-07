@@ -1,16 +1,34 @@
-import { AudioConfig, SubtitlesConfig, VideoMetadataConfig } from './app'
+import { AudioConfig, MediaMetadataConfig, SubtitlesConfig } from './app'
 import { FileMetadata } from './fs'
 
 export const extensions = {
-  video: { mp4: 'mp4', mov: 'mov', mkv: 'mkv', webm: 'webm', avi: 'avi' },
+  video: {
+    mp4: 'mp4',
+    mov: 'mov',
+    mkv: 'mkv',
+    webm: 'webm',
+    avi: 'avi',
+    gif: 'gif',
+  },
+  image: {
+    png: 'png',
+    jpg: 'jpg',
+    jpeg: 'jpeg',
+    webp: 'webp',
+    gif: 'gif',
+    svg: 'svg',
+  },
 } as const
+
+export type VideoExtension = keyof typeof extensions.video
+export type ImageExtension = keyof typeof extensions.image
 
 export const compressionPresets = {
   ironclad: 'ironclad',
   thunderbolt: 'thunderbolt',
 } as const
 
-export type CompressionResult = {
+export type VideoCompressionResult = {
   videoId: string
   fileName: string
   filePath: string
@@ -20,19 +38,23 @@ export type CompressionResult = {
 export enum CustomEvents {
   VideoCompressionProgress = 'VideoCompressionProgress',
   CancelInProgressCompression = 'CancelInProgressCompression',
-  BatchCompressionProgress = 'BatchCompressionProgress',
-  BatchCompressionIndividualCompressionCompletion = 'BatchCompressionIndividualCompressionCompletion',
+  BatchVideoCompressionProgress = 'BatchVideoCompressionProgress',
+  BatchVideoIndividualCompressionCompletion = 'BatchVideoIndividualCompressionCompletion',
+  ImageCompressionProgress = 'ImageCompressionProgress',
+  BatchImageCompressionProgress = 'BatchImageCompressionProgress',
+  BatchImageIndividualCompressionCompletion = 'BatchImageIndividualCompressionCompletion',
+  BatchMediaCompressionProgress = 'BatchMediaCompressionProgress',
+  BatchMediaIndividualCompressionCompletion = 'BatchMediaIndividualCompressionCompletion',
 }
 
 export type VideoCompressionProgress = {
   videoId: string
   batchId: string
-  fileName: string
   currentDuration: string
 }
-export type BatchCompressionIndividualCompressionResult = {
+export type BatchVideoIndividualCompressionResult = {
   batchId: string
-  result: CompressionResult
+  result: VideoCompressionResult
 }
 
 export type VideoThumbnail = {
@@ -111,7 +133,7 @@ export type SubtitleStream = {
   disposition: {
     default: boolean
     forced: boolean
-    attached_pic: boolean
+    attachedPic: boolean
     comment: boolean
     karaoke: boolean
     lyrics: boolean
@@ -137,13 +159,13 @@ export type ContainerInfo = {
   tags: [string, string][] | null
 }
 
-export type VideoTransforms = {
+export type MediaTransforms = {
   crop: { top: number; left: number; width: number; height: number }
   rotate: number
   flip: { horizontal: boolean; vertical: boolean }
 }
 
-export type VideoTransformsHistory =
+export type MediaTransformHistory =
   | {
       type: 'crop'
       value: { top: number; left: number; width: number; height: number }
@@ -152,10 +174,10 @@ export type VideoTransformsHistory =
   | { type: 'flip'; value: { horizontal: boolean; vertical: boolean } }
 
 export type BatchCompressionResult = {
-  results: Record<string, CompressionResult>
+  results: Record<string, VideoCompressionResult>
 }
 
-export type BatchCompressionProgress = {
+export type BatchVideoCompressionProgress = {
   batchId: string
   currentIndex: number
   totalCount: number
@@ -173,7 +195,7 @@ export type VideoFileMetadata = {
   fps?: number
 }
 
-export type TrimSegment = {
+export type VideoTrimSegment = {
   start: number
   end: number
 }
@@ -195,9 +217,125 @@ export type VideoCompressionConfig = {
   dimensions?: [number, number] | null
   fps?: string | null
   videoCodec?: string | null
-  transformsHistory?: VideoTransformsHistory[] | null
-  metadataConfig?: VideoMetadataConfig | null
+  transformHistory?: MediaTransformHistory[] | null
+  stripMetadata?: boolean
+  metadataConfig?: MediaMetadataConfig | null
   customThumbnailPath?: string | null
-  trimSegments?: TrimSegment[] | null
+  trimSegments?: VideoTrimSegment[] | null
   subtitlesConfig?: SubtitlesConfig | null
+  speed?: number | null
+}
+
+export type ImageCompressionProgress = {
+  imageId: string
+  batchId: string
+  progress: number
+}
+
+export type ImageCompressionResult = {
+  imageId: string
+  fileName: string
+  filePath: string
+  fileMetadata?: FileMetadata
+}
+
+export type SvgConfig = {
+  filterSpeckle?: number | null
+  colorPrecision?: number | null
+  layerDifference?: number | null
+  cornerThreshold?: number | null
+  lengthThreshold?: number | null
+  spliceThreshold?: number | null
+  isBw?: boolean | null
+}
+
+export type ImageCompressionConfig = {
+  imageId: string
+  imagePath: string
+  convertToExtension: string
+  isLossless: boolean
+  quality: number
+  stripMetadata: boolean
+  svgScaleFactor: number | null
+  svgConfig?: SvgConfig | null
+  dimensions?: [number, number] | null
+  transformHistory?: MediaTransformHistory[] | null
+}
+
+export type MediaItem = {
+  videoConfig?: VideoCompressionConfig
+  imageConfig?: ImageCompressionConfig
+}
+
+export type MediaCompressionProgress =
+  | ({ mediaType: 'video' } & VideoCompressionProgress)
+  | ({ mediaType: 'image' } & ImageCompressionProgress)
+
+export type MediaCompressionResult =
+  | ({ mediaType: 'video' } & VideoCompressionResult)
+  | ({ mediaType: 'image' } & ImageCompressionResult)
+
+export type BatchMediaCompressionProgress = {
+  batchId: string
+  currentIndex: number
+  totalCount: number
+  mediaProgress: MediaCompressionProgress
+}
+
+export type BatchMediaIndividualCompressionResult = {
+  batchId: string
+  result: MediaCompressionResult
+}
+
+export type MediaBatchCompressionResult = {
+  results: Record<string, MediaCompressionResult>
+}
+
+export type ImageBasicInfo = {
+  filename: string
+  format: string
+  formatLongName: string
+  mimeType: string
+  size: number
+}
+
+export type ImageDimensions = {
+  width: number
+  height: number
+  aspectRatio: string
+  orientation: number | null
+  dpi: [number, number] | null
+  megapixels: number
+}
+
+export type ImageColorInfo = {
+  colorType: string
+  bitDepth: number
+  hasAlpha: boolean
+  colorSpace: string | null
+  pixelFormat: string
+}
+
+export type ExifTag = {
+  key: string
+  value: string
+  category: string
+}
+
+export type ExifInfo = {
+  tags: ExifTag[]
+  make: string | null
+  model: string | null
+  software: string | null
+  dateTimeOriginal: string | null
+  dateTimeDigitized: string | null
+  copyright: string | null
+  artist: string | null
+  gpsCoordinates: [number, number] | null
+  lensModel: string | null
+  iso: number | null
+  exposureTime: string | null
+  fNumber: string | null
+  focalLength: string | null
+  flash: string | null
 }

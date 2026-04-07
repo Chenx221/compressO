@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "CompressO",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "identifier": "com.compresso.app",
   "build": {
     "beforeBuildCommand": "pnpm vite:build",
@@ -9,13 +9,19 @@
     "devUrl": "http://localhost:3001"
   },
   "bundle": {
-    "longDescription": "Compress any video file to a tiny size.",
-    "shortDescription": "Compress any video to a tiny size",
+    "longDescription": "Compress any video/image file to a tiny size.",
+    "shortDescription": "Compress any video/image to a tiny size",
     "active": true,
     "category": "Video",
     "copyright": "Code For Real",
-    "targets": ["deb", "appimage", "nsis", "dmg"],
-    "externalBin": ["./bin/compresso_ffmpeg", "./bin/compresso_ffprobe"],
+    "targets": ["deb", "appimage", "nsis", "dmg", "app"],
+    "externalBin": [
+      "./bin/compresso_ffmpeg",
+      "./bin/compresso_ffprobe",
+      "./bin/compresso_pngquant",
+      "./bin/compresso_jpegoptim",
+      "./bin/compresso_gifski"
+    ],
     "fileAssociations": [
       {
         "ext": ["mp4"],
@@ -24,7 +30,7 @@
       },
       {
         "ext": ["mov"],
-        "mimeType": "video/quicktime",
+        "mimeType": "video/quicklime's",
         "role": "Editor"
       },
       {
@@ -40,6 +46,31 @@
       {
         "ext": ["avi"],
         "mimeType": "video/x-msvideo",
+        "role": "Editor"
+      },
+      {
+        "ext": ["png"],
+        "mimeType": "image/png",
+        "role": "Editor"
+      },
+      {
+        "ext": ["jpg", "jpeg"],
+        "mimeType": "image/jpeg",
+        "role": "Editor"
+      },
+      {
+        "ext": ["webp"],
+        "mimeType": "image/webp",
+        "role": "Editor"
+      },
+      {
+        "ext": ["gif"],
+        "mimeType": "image/gif",
+        "role": "Editor"
+      },
+      {
+        "ext": ["svg"],
+        "mimeType": "image/svg+xml",
         "role": "Editor"
       }
     ],
@@ -66,15 +97,25 @@
       "providerShortName": null,
       "signingIdentity": null
     },
-    "resources": [],
+    "resources": { "../LICENSES/": "" },
     "linux": {
       "deb": {
         "depends": [],
         "desktopTemplate": "compressO.desktop.template"
       }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/codeforreal1/compressO/releases/latest/download/latest.json"
+      ],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZDRjIzRTAxQzc1Njc4RjgKUldUNGVGYkhBVDd5YkJNejh2aHlOeS9XekFOcUlxUXhIYlBLS1ZLdHJzVW4zRVE1QUhUUjZOd0QK"
     }
   },
-  "plugins": {},
   "app": {
     "windows": [
       {

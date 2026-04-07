@@ -13,7 +13,7 @@ cask "compresso" do
   end
 
   name "CompressO"
-  desc "Compress any video file to a tiny size"
+  desc "Compress any video/image into a tiny size"
   homepage "https://github.com/codeforreal1/compressO"
 
   depends_on macos: ">= :ventura" # macOS 13

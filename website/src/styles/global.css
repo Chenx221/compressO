@@ -8,10 +8,15 @@
   --gray: rgb(96, 115, 159);
   --gray-light: rgb(229, 233, 240);
   --gray-dark: rgb(34, 41, 57);
-  --box-shadow: 0 2px 6px rgba(var(--gray), 25%),
-    0 8px 24px rgba(var(--gray), 33%), 0 16px 32px rgba(var(--gray), 33%);
+  --box-shadow:
+    0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%), 0 16px
+    32px rgba(var(--gray), 33%);
   --gradient-gray: rgba(var(--gray-light), 50%), #fff;
-  --gradient-primary: linear-gradient(120deg, var(--accent) 0%, var(--accent-dark) 100%);
+  --gradient-primary: linear-gradient(
+    120deg,
+    var(--accent) 0%,
+    var(--accent-dark) 100%
+  );
 }
 
 @font-face {
@@ -145,7 +150,7 @@ pre {
   border-radius: 8px;
 }
 
-pre>code {
+pre > code {
   all: unset;
 }
 
@@ -214,7 +219,6 @@ hr {
   }
 }
 
-
 .gradient-text {
   background-image: var(--gradient-primary);
   -webkit-background-clip: text;
@@ -246,7 +250,6 @@ hr {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     transform: scale(1);
@@ -357,10 +360,12 @@ hr {
 
 .section-divider {
   height: 1px;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.1),
-      transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
   margin: 0;
 }
 
@@ -413,7 +418,7 @@ hr {
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 40px;
   transition: all 0.3s ease;
-  transform: skew(-3deg);
+  border-radius: 2rem;
 }
 
 .feature-card:hover {
@@ -424,9 +429,11 @@ hr {
 .feature-icon {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg,
-      rgba(225, 234, 102, 0.2),
-      rgba(218, 104, 10, 0.2));
+  background: linear-gradient(
+    135deg,
+    rgba(225, 234, 102, 0.2),
+    rgba(218, 104, 10, 0.2)
+  );
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -448,10 +455,12 @@ hr {
 }
 
 .showcase-section {
-  background: linear-gradient(180deg,
-      transparent,
-      rgba(102, 126, 234, 0.05),
-      transparent);
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(102, 126, 234, 0.05),
+    transparent
+  );
 }
 
 .showcase-content {
@@ -598,9 +607,7 @@ hr {
 
 .cta-section {
   text-align: center;
-  background: linear-gradient(180deg,
-      rgba(102, 126, 234, 0.1),
-      transparent);
+  background: linear-gradient(180deg, rgba(102, 126, 234, 0.1), transparent);
 }
 
 .cta-section h2 {

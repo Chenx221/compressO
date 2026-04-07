@@ -1,26 +1,27 @@
 import { core, event } from '@tauri-apps/api'
 import { invoke } from '@tauri-apps/api/core'
-import { useEffect, useRef } from 'react'
+import clamp from 'lodash/clamp'
+import { memo, useEffect, useRef } from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 
 import {
-  BatchCompressionIndividualCompressionResult,
+  BatchMediaCompressionProgress,
+  BatchMediaIndividualCompressionResult,
   CustomEvents,
-  VideoCompressionProgress,
 } from '@/types/compression'
 import { formatBytes } from '@/utils/fs'
 import { convertDurationToMilliseconds } from '@/utils/string'
 import { appProxy } from '../-state'
 
 async function updateDockProgress() {
-  const videos = snapshot(appProxy).state.videos
-  if (videos.length === 0) return
+  const media = snapshot(appProxy).state.media
+  if (media.length === 0) return
 
-  const totalProgress = videos.reduce(
-    (sum, video) => sum + (video.compressionProgress ?? 0),
+  const totalProgress = media.reduce(
+    (sum, media) => sum + (media.compressionProgress ?? 0),
     0,
   )
-  const batchProgress = totalProgress / videos.length
+  const batchProgress = totalProgress / media.length
 
   try {
     await invoke('set_dock_progress', { progress: batchProgress })
@@ -41,90 +42,125 @@ function CompressionProgress() {
   const {
     state: { batchId },
   } = useSnapshot(appProxy)
-
-  const compressionProgressRef = useRef<event.UnlistenFn>()
-  const individualCompressionResultRef = useRef<event.UnlistenFn>()
+  const compressionProgressUnlistenRef = useRef<event.UnlistenFn>()
+  const individualCompressionResultUnlistenRef = useRef<event.UnlistenFn>()
 
   useEffect(() => {
+    // Batch compression progress
     if (batchId) {
       ;(async () => {
-        if (compressionProgressRef.current) {
-          compressionProgressRef.current?.()
+        if (compressionProgressUnlistenRef.current) {
+          compressionProgressUnlistenRef.current?.()
         }
-        compressionProgressRef.current =
-          await event.listen<VideoCompressionProgress>(
-            CustomEvents.VideoCompressionProgress,
+        compressionProgressUnlistenRef.current =
+          await event.listen<BatchMediaCompressionProgress>(
+            CustomEvents.BatchMediaCompressionProgress,
             (evt) => {
               const payload = evt?.payload
               if (batchId === payload?.batchId) {
-                const videos = snapshot(appProxy).state.videos
-                const targetVideoIndex = videos.findIndex(
-                  (v) => v.id === payload.videoId,
+                const media = snapshot(appProxy).state.media
+                const targetMediaIndex = media.findIndex(
+                  (v) =>
+                    v.id ===
+                    (payload.mediaProgress.mediaType === 'video'
+                      ? payload.mediaProgress.videoId
+                      : payload.mediaProgress.imageId),
                 )
-                if (targetVideoIndex !== -1) {
-                  appProxy.state.currentVideoIndex = targetVideoIndex
-                  appProxy.state.videos[targetVideoIndex].isCompressing = true
+                if (targetMediaIndex !== -1) {
+                  appProxy.state.currentMediaIndex = targetMediaIndex
+                  appProxy.state.media[targetMediaIndex].isCompressing = true
 
-                  const trimConfig =
-                    videos[targetVideoIndex]?.config?.trimConfig ?? []
+                  if (
+                    payload.mediaProgress.mediaType === 'video' &&
+                    media[targetMediaIndex].type === 'video'
+                  ) {
+                    const trimConfig =
+                      media[targetMediaIndex]?.config?.trimConfig ?? []
 
-                  const targetVideoDuration =
-                    videos[targetVideoIndex].videoDuration ?? 0
+                    const targetVideoDuration =
+                      media[targetMediaIndex].videoDuration ?? 0
 
-                  const videoDurationInMilliseconds =
-                    (videos[targetVideoIndex]?.config?.shouldTrimVideo &&
-                    trimConfig
-                      ? (trimConfig.reduce((a, c) => {
-                          a += c.end >= c.start ? c.end - c.start : 0
-                          return a
-                        }, 0) ?? targetVideoDuration)
-                      : targetVideoDuration) * 1000
+                    let videoDurationInMilliseconds =
+                      (media[targetMediaIndex]?.config?.shouldTrimVideo &&
+                      trimConfig
+                        ? (trimConfig.reduce((a, c) => {
+                            a += c.end >= c.start ? c.end - c.start : 0
+                            return a
+                          }, 0) ?? targetVideoDuration)
+                        : targetVideoDuration) * 1000
 
-                  if (!Number.isNaN(videoDurationInMilliseconds)) {
+                    if (
+                      media[targetMediaIndex]?.config?.convertToExtension ===
+                      'gif'
+                    ) {
+                      // For a gif, we need to double the total video duration as we need to first convert the original video to video settings and then convert that video to gif
+                      videoDurationInMilliseconds *= 2
+                    }
+
                     const currentDurationInMilliseconds =
-                      convertDurationToMilliseconds(payload?.currentDuration) // current duration is the duration processed on the output not input source
+                      convertDurationToMilliseconds(
+                        payload.mediaProgress.currentDuration,
+                      )
 
                     if (
                       currentDurationInMilliseconds > 0 &&
                       videoDurationInMilliseconds >=
                         currentDurationInMilliseconds
                     ) {
-                      appProxy.state.videos[
-                        targetVideoIndex
-                      ].compressionProgress =
+                      appProxy.state.media[
+                        targetMediaIndex
+                      ].compressionProgress = clamp(
                         (currentDurationInMilliseconds * 100) /
-                        videoDurationInMilliseconds
+                          videoDurationInMilliseconds,
+                        0,
+                        100,
+                      )
 
                       updateDockProgress()
                     }
+                  } else if (
+                    payload.mediaProgress.mediaType === 'image' &&
+                    media[targetMediaIndex].type === 'image'
+                  ) {
+                    appProxy.state.media[targetMediaIndex].compressionProgress =
+                      clamp(payload.mediaProgress.progress, 0, 100)
+
+                    updateDockProgress()
                   }
                 }
               }
             },
           )
       })()
+
+      // Individual compression progress
       ;(async () => {
-        if (individualCompressionResultRef.current) {
-          individualCompressionResultRef.current?.()
+        if (individualCompressionResultUnlistenRef.current) {
+          individualCompressionResultUnlistenRef.current?.()
         }
-        individualCompressionResultRef.current =
-          await event.listen<BatchCompressionIndividualCompressionResult>(
-            CustomEvents.BatchCompressionIndividualCompressionCompletion,
+        individualCompressionResultUnlistenRef.current =
+          await event.listen<BatchMediaIndividualCompressionResult>(
+            CustomEvents.BatchMediaIndividualCompressionCompletion,
             (evt) => {
               const payload = evt?.payload
               if (batchId === payload?.batchId && payload?.result) {
-                const videos = snapshot(appProxy).state.videos
-                const targetVideoIndex = videos.findIndex(
-                  (v) => v.id === payload.result.videoId,
+                const media = snapshot(appProxy).state.media
+                const targetMediaIndex = media.findIndex(
+                  (v) =>
+                    v.id ===
+                    (payload.result.mediaType === 'video'
+                      ? payload.result.videoId
+                      : payload.result.imageId),
                 )
-                if (targetVideoIndex !== -1) {
-                  const fileMetadata = payload?.result?.fileMetadata
-                  appProxy.state.videos[targetVideoIndex].isProcessCompleted =
+                if (targetMediaIndex !== -1) {
+                  const fileMetadata = payload.result.fileMetadata
+
+                  appProxy.state.media[targetMediaIndex].isProcessCompleted =
                     true
-                  appProxy.state.videos[targetVideoIndex].isCompressing = false
-                  appProxy.state.videos[targetVideoIndex].compressionProgress =
+                  appProxy.state.media[targetMediaIndex].isCompressing = false
+                  appProxy.state.media[targetMediaIndex].compressionProgress =
                     100
-                  appProxy.state.videos[targetVideoIndex].compressedVideo = {
+                  appProxy.state.media[targetMediaIndex].compressedFile = {
                     isSuccessful: true,
                     fileName: fileMetadata?.fileName,
                     fileNameToDisplay: `${fileMetadata?.fileName?.slice(
@@ -138,14 +174,14 @@ function CompressionProgress() {
                     size: formatBytes(fileMetadata?.size ?? 0),
                     sizeInBytes: fileMetadata?.size,
                   }
-                  if (appProxy.state.videos.length > 1) {
+                  if (appProxy.state.media.length > 1) {
                     appProxy.takeSnapshot('batchCompressionStep')
                   }
 
-                  const allVideosCompleted = snapshot(
+                  const allMediaCompleted = snapshot(
                     appProxy,
-                  ).state?.videos?.every((v) => v.isProcessCompleted)
-                  if (allVideosCompleted) {
+                  ).state?.media?.every((v) => v.isProcessCompleted)
+                  if (allMediaCompleted) {
                     clearDockProgress()
                   } else {
                     updateDockProgress()
@@ -156,10 +192,9 @@ function CompressionProgress() {
           )
       })()
     }
-
     return () => {
-      compressionProgressRef.current?.()
-      individualCompressionResultRef.current?.()
+      compressionProgressUnlistenRef.current?.()
+      individualCompressionResultUnlistenRef.current?.()
       clearDockProgress()
     }
   }, [batchId])
@@ -167,4 +202,4 @@ function CompressionProgress() {
   return null
 }
 
-export default CompressionProgress
+export default memo(CompressionProgress)

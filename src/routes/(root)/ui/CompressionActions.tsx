@@ -1,5 +1,5 @@
 import { UseDisclosureProps, useDisclosure } from '@heroui/react'
-import React from 'react'
+import { memo } from 'react'
 import { snapshot, useSnapshot } from 'valtio'
 
 import Button from '@/components/Button'
@@ -11,11 +11,11 @@ import { appProxy } from '../-state'
 
 function CompressionActions() {
   const {
-    state: { videos, isProcessCompleted, isLoadingFiles, isSaving },
+    state: { media, isProcessCompleted, isLoadingMediaFiles, isSaving },
     resetProxy,
   } = useSnapshot(appProxy)
 
-  const alertDiscloser = useDisclosure()
+  const alertDisclosure = useDisclosure()
 
   const handleDiscard = async ({
     closeModal,
@@ -23,12 +23,14 @@ function CompressionActions() {
     closeModal: UseDisclosureProps['onClose']
   }) => {
     try {
-      const deletePromises = videos
-        .flatMap((video) => [
-          video.compressedVideo?.pathRaw
-            ? deleteFile(video.compressedVideo.pathRaw)
+      const deletePromises = media
+        .flatMap((media) => [
+          media.compressedFile?.pathRaw
+            ? deleteFile(media.compressedFile.pathRaw)
             : null,
-          video.thumbnailPathRaw ? deleteFile(video.thumbnailPathRaw) : null,
+          media.type === 'video' && media.thumbnailPathRaw
+            ? deleteFile(media.thumbnailPathRaw)
+            : null,
         ])
         .filter(Boolean)
 
@@ -41,7 +43,7 @@ function CompressionActions() {
   const handleCancelCompression = () => {
     const appSnapshot = snapshot(appProxy)
     if (appSnapshot.state.isProcessCompleted && !appSnapshot.state.isSaved) {
-      alertDiscloser.onOpen()
+      alertDisclosure.onOpen()
     } else {
       resetProxy()
     }
@@ -51,7 +53,7 @@ function CompressionActions() {
     appProxy.timeTravel('beforeCompressionStarted')
   }
 
-  return videos.length && !isLoadingFiles ? (
+  return media.length && !isLoadingMediaFiles ? (
     <>
       <div className="w-fit flex justify-center items-center z-[10]">
         {isProcessCompleted ? (
@@ -84,9 +86,9 @@ function CompressionActions() {
         </Tooltip>
       </div>
       <AlertDialog
-        title={`视频${videos.length > 1 ? '尚未保存' : '尚未保存'}`}
-        discloser={alertDiscloser}
-        description={`压缩后的视频${videos.length > 1 ? '尚未保存' : '尚未保存'}，确定要丢弃吗？`}
+        title={`媒体尚未保存`}
+        disclosure={alertDisclosure}
+        description={`压缩后的媒体尚未保存，确定要丢弃吗？`}
         renderFooter={({ closeModal }) => (
           <>
             <AlertDialogButton onPress={closeModal}>返回</AlertDialogButton>
@@ -103,4 +105,4 @@ function CompressionActions() {
   ) : null
 }
 
-export default React.memo(CompressionActions)
+export default memo(CompressionActions)

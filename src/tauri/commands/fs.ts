@@ -12,6 +12,10 @@ export function getImageDimension(
   return core.invoke('get_image_dimension', { imagePath })
 }
 
+export function getSvgDimension(imagePath: string): Promise<[number, number]> {
+  return core.invoke('get_svg_dimension', { imagePath })
+}
+
 export function moveFile(from: string, to: string) {
   return core.invoke('move_file', { from, to })
 }
@@ -33,9 +37,11 @@ export function copyFileToClipboard(filePath: string) {
     filePath,
   })
 }
+
 export function readFilesFromClipboard() {
   return core.invoke<string[]>('read_files_from_clipboard')
 }
+
 export function readFilesFromPaths(paths: string[]) {
   return core.invoke<string[]>('read_files_from_paths', { paths })
 }

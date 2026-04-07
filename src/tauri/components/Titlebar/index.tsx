@@ -33,7 +33,7 @@ function Titlebar() {
     <div
       ref={titlebarRef}
       id="titlebar"
-      className="fixed top-0 left-0 right-0 bottom-0 w-full h-[26px] bg-white1 dark:bg-black1"
+      className="fixed top-0 left-0 right-0 bottom-0 w-full h-[45px] bg-white1 dark:bg-black1"
     />
   )
 }

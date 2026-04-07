@@ -5,12 +5,32 @@
   },
   "editor.defaultFormatter": "biomejs.biome",
   "cSpell.words": [
+    "appimage",
     "compresso",
+    "Deflaters",
+    "Exif",
     "FFPROBE",
+    "ghostscript",
+    "gifsicle",
+    "gifski",
     "heroui",
+    "imagequant",
+    "jpegoptim",
+    "matroska",
+    "msvideo",
+    "nsis",
+    "oxipng",
+    "pixmap",
+    "pngquant",
+    "resvg",
+    "skia",
+    "svgcleaner",
+    "tauri",
     "Triggerer",
     "Unlisten",
-    "valtio"
+    "usvg",
+    "valtio",
+    "vtracer"
   ],
   "[json]": {
     "editor.defaultFormatter": "biomejs.biome"
@@ -32,5 +52,6 @@
   },
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
-  }
+  },
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }

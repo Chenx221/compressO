@@ -2,9 +2,14 @@ import { getLocalTimeZone, now } from '@internationalized/date'
 import cloneDeep from 'lodash/cloneDeep'
 import { proxy } from 'valtio'
 
-import { App, VideoConfig, VideoMetadataConfig } from '../../types/app'
+import {
+  App,
+  ImageConfig,
+  MediaMetadataConfig,
+  VideoConfig,
+} from '../../types/app'
 
-export const videoMetadataConfigInitialState: VideoMetadataConfig = {
+export const videoMetadataConfigInitialState: MediaMetadataConfig = {
   title: '',
   album: '',
   artist: '',
@@ -19,7 +24,7 @@ export const videoMetadataConfigInitialState: VideoMetadataConfig = {
 }
 
 export const videoConfigInitialState: VideoConfig = {
-  convertToExtension: 'mp4',
+  convertToExtension: '-',
   presetName: 'ironclad',
   shouldDisableCompression: false,
   shouldEnableCustomVideoCodec: false,
@@ -29,13 +34,13 @@ export const videoConfigInitialState: VideoConfig = {
   shouldEnableCustomAudioCodec: false,
   audioConfig: {
     volume: 100,
+    audioCodec: '-',
     audioChannelConfig: null,
     bitrate: null,
   },
   shouldEnableAudioTrackSelection: false,
   quality: 50,
-  shouldEnableQuality: false,
-  shouldPreserveMetadata: true,
+  shouldStripMetadata: true,
   metadataConfig: null,
   customThumbnailPath: null,
   shouldEnableCustomThumbnail: false,
@@ -47,22 +52,47 @@ export const videoConfigInitialState: VideoConfig = {
     subtitles: [],
     shouldEnableSubtitles: false,
   },
+  shouldEnableCustomSpeed: false,
+  customSpeed: undefined,
+}
+
+export const svgSettingInitialState = {
+  filterSpeckle: 4,
+  colorPrecision: 6,
+  layerDifference: 16,
+  cornerThreshold: 60,
+  lengthThreshold: 4,
+  spliceThreshold: 45,
+  isBw: false,
+}
+
+export const imageConfigInitialState: ImageConfig = {
+  convertToExtension: '-',
+  isLossless: false,
+  quality: 50,
+  shouldStripMetadata: true,
+  svgScaleFactor: 1,
+  shouldEnableAdvancedSvgSetting: false,
+  svgConfig: svgSettingInitialState,
 }
 
 const appInitialState: App = {
-  videos: [],
-  isLoadingFiles: false,
-  totalSelectedFilesCount: 0,
-  currentVideoIndex: 0,
-  totalDurationMs: 0,
+  activeTab: 'all',
+  media: [],
+  isLoadingMediaFiles: false,
+  totalSelectedMediaCount: 0,
+  currentMediaIndex: 0,
   isCompressing: false,
   totalProgress: 0,
   isProcessCompleted: false,
   isBatchCompressionCancelled: false,
   isSaving: false,
   isSaved: false,
-  selectedVideoIndexForCustomization: -1,
-  commonConfigForBatchCompression: videoConfigInitialState,
+  selectedMediaIndexForCustomization: -1,
+  commonConfigForBatchCompression: {
+    videoConfig: videoConfigInitialState,
+    imageConfig: imageConfigInitialState,
+  },
 }
 
 const snapshotMoment = {
@@ -115,15 +145,21 @@ export const appProxy: AppProxy = proxy({
 })
 
 /**
- * Normalizes the individual non-dirty video config to match with batch config.
+ * Normalizes the individual non-dirty media config to match with batch config.
  */
-export function normalizeBatchVideosConfig() {
-  if (appProxy.state.videos.length > 1) {
-    for (const index in appProxy.state.videos) {
-      if (!appProxy.state.videos[index]?.isConfigDirty) {
-        appProxy.state.videos[index].config = cloneDeep(
-          appProxy.state.commonConfigForBatchCompression,
-        )
+export function normalizeBatchMediaConfig() {
+  if (appProxy.state.media.length > 1) {
+    for (const index in appProxy.state.media) {
+      if (!appProxy.state.media[index]?.isConfigDirty) {
+        if (appProxy.state.media[index].type === 'video') {
+          appProxy.state.media[index].config = cloneDeep(
+            appProxy.state.commonConfigForBatchCompression.videoConfig,
+          )
+        } else if (appProxy.state.media[index].type === 'image') {
+          appProxy.state.media[index].config = cloneDeep(
+            appProxy.state.commonConfigForBatchCompression.imageConfig,
+          )
+        }
       }
     }
   }

@@ -13,7 +13,10 @@ function Link({ children, href, className }: LinkProps) {
   return (
     <button
       type="button"
-      className={cn(['font-bold text-primary', className])}
+      className={cn([
+        'font-bold text-primary hover:underline hover:decoration-wavy',
+        className,
+      ])}
       onClick={() => {
         open(href)
       }}

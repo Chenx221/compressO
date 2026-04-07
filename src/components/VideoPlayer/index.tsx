@@ -14,6 +14,7 @@ import { BaseReactPlayerProps } from 'react-player/base'
 import { ClassNameValue } from 'tailwind-merge'
 
 import { cn } from '@/utils/tailwind'
+import { constructVideoUrl } from '@/utils/video'
 import Button from '../Button'
 import Icon from '../Icon'
 import { BoundaryRowActionRender, ScaleRender } from '../Timeline'
@@ -44,6 +45,9 @@ export interface VideoPlayerProps extends BaseReactPlayerProps {
   contextMenu?: React.ReactNode
   onSpaceKeydownForPlayPause?: () => void
   onArrowKeySeek?: (arrowKey: 'left' | 'right') => void
+  disablePlayPauseControlAtCenter?: boolean
+  autoPlay?: boolean
+  disablePlayPauseViaContainerClick?: boolean
 }
 
 const scales: TimelineScales = {
@@ -57,12 +61,16 @@ const SEEK_DURATION = 3
 const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
   (
     {
+      url,
       playPauseOnSpaceKeydown,
       containerClassName,
       enableTimelinePlayer,
       disableClosedCaptions,
       contextMenu,
       onSpaceKeydownForPlayPause,
+      disablePlayPauseControlAtCenter,
+      autoPlay,
+      disablePlayPauseViaContainerClick,
       onArrowKeySeek,
       onProgress,
       onDuration,
@@ -70,11 +78,14 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       onPause,
       onEnded,
       onReady,
+
       ...props
     },
     forwardedRef,
   ) => {
     const id = useId()
+
+    const [videoUrl, setVideoUrl] = useState<typeof url | null>(null)
     const [isPlaying, setIsPlaying] = useState(false)
     const [duration, setDuration] = useState<number | null>(null)
     const [contextMenuOpen, setContextMenuOpen] = useState(false)
@@ -319,7 +330,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           if (playPauseButtonRef.current) {
             playPauseButtonRef.current.style.visibility = 'hidden'
           }
-        }, 3000)
+        }, 1000)
       } else {
         clearInterval(playPauseButtonRefIntervalId.current!)
         if (playPauseButtonRef.current) {
@@ -330,6 +341,23 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         clearInterval(playPauseButtonRefIntervalId.current!)
       }
     }, [isPlaying])
+
+    useEffect(() => {
+      // On platforms like Linux, native Webview does not support accessing local asset like video. We have to serve the video asset via a local server from the backend.
+      ;(async () => {
+        if (!url || typeof url !== 'string' || !url?.startsWith('asset://')) {
+          setVideoUrl(url)
+          return
+        }
+
+        try {
+          const uri = await constructVideoUrl(url)
+          setVideoUrl(uri)
+        } catch {
+          setVideoUrl(url)
+        }
+      })()
+    }, [url])
 
     useImperativeHandle(
       forwardedRef,
@@ -357,8 +385,12 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       <div className={cn('w-full h-full', containerClassName)}>
         <div
           className="relative w-full h-full"
-          role="button"
-          onClick={togglePlayPause}
+          {...(!disablePlayPauseViaContainerClick
+            ? {
+                role: 'button',
+                onClick: togglePlayPause,
+              }
+            : {})}
           onContextMenu={(e) => {
             if (contextMenu) {
               handleContextMenu(e)
@@ -367,6 +399,7 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
         >
           <ReactPlayer
             ref={playerRef}
+            url={videoUrl!}
             controls
             width="100%"
             height="100%"
@@ -403,22 +436,27 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             onReady={(player) => {
               onReady?.(player)
               toggleClosedCaptions(disableClosedCaptions)
+              if (autoPlay) {
+                setIsPlaying(true)
+              }
             }}
             {...props}
           />
-          <Button
-            ref={playPauseButtonRef}
-            onPress={togglePlayPause}
-            isIconOnly
-            radius="full"
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2  bg-black/30 cursor-pointer"
-          >
-            <Icon
-              name={isPlaying ? 'pause' : 'play'}
-              size={28}
-              className="text-white drop-shadow-lg"
-            />
-          </Button>
+          {!disablePlayPauseControlAtCenter ? (
+            <Button
+              ref={playPauseButtonRef}
+              onPress={togglePlayPause}
+              isIconOnly
+              radius="full"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2  bg-black/30 cursor-pointer"
+            >
+              <Icon
+                name={isPlaying ? 'pause' : 'play'}
+                size={28}
+                className="text-white drop-shadow-lg"
+              />
+            </Button>
+          ) : null}
         </div>
         {contextMenuOpen && contextMenuPosition && contextMenu ? (
           <div
@@ -466,7 +504,6 @@ const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
             style={{
               width: '100%',
               height: '75px',
-              borderRadius: '10px',
               margin: '10px 0',
             }}
             getActionRender={(action, row) => {

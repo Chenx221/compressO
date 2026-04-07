@@ -11,121 +11,206 @@ import Layout from '@/components/Layout'
 import Spinner from '@/components/Spinner'
 import { toast } from '@/components/Toast'
 import { generateVideoThumbnail } from '@/tauri/commands/ffmpeg'
-import { getVideoInfo } from '@/tauri/commands/ffprobe'
-import { getFileMetadata } from '@/tauri/commands/fs'
+import { getVideoBasicInfo } from '@/tauri/commands/ffprobe'
+import {
+  getFileMetadata,
+  getImageDimension,
+  getSvgDimension,
+} from '@/tauri/commands/fs'
+import { convertSvgToPng } from '@/tauri/commands/image'
 import { extensions } from '@/types/compression'
 import { formatBytes } from '@/utils/fs'
-import { appProxy, videoConfigInitialState } from './-state'
+import { Image, Video } from '../../types/app'
+import {
+  appProxy,
+  imageConfigInitialState,
+  videoConfigInitialState,
+} from './-state'
 import Setting from './ui/app-settings/Setting'
-import DragAndDrop from './ui/DragAndDrop'
+import DragAndDropFiles from './ui/DragAndDropFiles'
+import MediaConfig from './ui/MediaConfig'
 import OpenWithApp from './ui/OpenWithApp'
 import ReadFilesFromClipboard from './ui/ReadFilesFromClipboard'
-import VideoConfig from './ui/VideoConfig'
-import { Video } from '../../types/app'
 
 export const Route = createFileRoute('/(root)/')({
   component: Root,
 })
 
+async function getSvgDimensionSilently(
+  path: string,
+): Promise<[number, number] | null> {
+  try {
+    const dimension = await getSvgDimension(path)
+    return dimension
+  } catch {
+    return null
+  }
+}
+
 function Root() {
   const { state, resetProxy } = useSnapshot(appProxy)
 
-  const { videos, isLoadingFiles, totalSelectedFilesCount } = state
+  const { media, isLoadingMediaFiles, totalSelectedMediaCount } = state
 
-  const handleVideoSelection = React.useCallback(
+  const handleMediaSelection = React.useCallback(
     async (path: string | string[]) => {
       if (appProxy.state.isCompressing) return
 
+      const videoExtensions = Object.keys(extensions.video)
+      const imageExtensions = Object.keys(extensions.image)
+
       const rawPaths = Array.isArray(path) ? path : [path]
-      const videoPaths = rawPaths.filter((filePath) => {
+      const mediaPaths = rawPaths.filter((filePath) => {
         const ext = filePath.split('.').pop()?.toLowerCase()
-        return ext && Object.keys(extensions.video).includes(ext)
+        return (
+          ext &&
+          (videoExtensions.includes(ext) || imageExtensions.includes(ext))
+        )
       })
 
-      if (videoPaths.length === 0) {
-        toast.error('未找到有效文件。')
+      if (mediaPaths.length === 0) {
+        toast.error('未找到有效媒体文件。')
         return
       }
 
-      appProxy.state.isLoadingFiles = true
-      appProxy.state.totalSelectedFilesCount = videoPaths.length
+      appProxy.state.isLoadingMediaFiles = true
+      appProxy.state.totalSelectedMediaCount = mediaPaths.length
 
       let corruptedFilesCount = 0
-      for (const index in videoPaths) {
-        const path = videoPaths[index]
+      for (const index in mediaPaths) {
+        const path = mediaPaths[index]
         try {
-          const [fileMetadata, videoInfo, videoThumbnail] = await Promise.all([
-            getFileMetadata(path),
-            getVideoInfo(path),
-            generateVideoThumbnail(path),
-          ])
+          const fileMetadata = await getFileMetadata(path)
+          const mediaType = fileMetadata.mimeType.startsWith('video')
+            ? 'video'
+            : 'image'
 
           if (
             !fileMetadata ||
-            (typeof fileMetadata?.size === 'number' &&
-              fileMetadata?.size <= 1000)
+            (typeof fileMetadata?.size === 'number' && mediaType === 'video'
+              ? fileMetadata?.size <= 1000
+              : fileMetadata?.size < 100)
           ) {
             corruptedFilesCount++
             continue
           }
 
-          const videoState: Video = {
-            id: videoThumbnail?.id ?? `${index}-${+new Date()}`,
-            pathRaw: path,
-            path: core.convertFileSrc(path),
-            fileName: fileMetadata?.fileName,
-            mimeType: fileMetadata?.mimeType,
-            sizeInBytes: fileMetadata?.size,
-            size: formatBytes(fileMetadata?.size ?? 0),
-            extension: fileMetadata?.extension?.toLowerCase?.(),
-            config: cloneDeep(videoConfigInitialState),
-            previewMode: 'video',
-          }
+          if (mediaType === 'video') {
+            const [videoInfo, videoThumbnail] = await Promise.all([
+              getVideoBasicInfo(path),
+              generateVideoThumbnail(path),
+            ])
 
-          if (fileMetadata?.extension) {
-            videoState.config.convertToExtension =
-              fileMetadata?.extension as keyof (typeof extensions)['video']
-          }
+            const videoState: Video & { type: 'video' } = {
+              type: 'video',
+              id: videoThumbnail?.id ?? `${index}-${+new Date()}`,
+              pathRaw: path,
+              path: core.convertFileSrc(path),
+              fileName: fileMetadata?.fileName,
+              mimeType: fileMetadata?.mimeType,
+              sizeInBytes: fileMetadata?.size,
+              size: formatBytes(fileMetadata?.size ?? 0),
+              extension: fileMetadata?.extension?.toLowerCase?.(),
+              config: cloneDeep(videoConfigInitialState),
+              previewMode: 'video',
+            }
 
-          if (videoInfo) {
-            const dimensions = videoInfo.dimensions
-            if (
-              !Number.isNaN(videoInfo.dimensions?.[0]) &&
-              !Number.isNaN(videoInfo.dimensions?.[1])
-            ) {
-              videoState.dimensions = {
-                width: dimensions[0],
-                height: dimensions[1],
+            if (fileMetadata?.extension) {
+              videoState.config.convertToExtension =
+                fileMetadata?.extension as keyof (typeof extensions)['video']
+            }
+
+            if (videoInfo) {
+              const dimensions = videoInfo.dimensions
+              if (
+                !Number.isNaN(videoInfo.dimensions?.[0]) &&
+                !Number.isNaN(videoInfo.dimensions?.[1])
+              ) {
+                videoState.dimensions = {
+                  width: dimensions[0],
+                  height: dimensions[1],
+                }
+              }
+
+              if (videoInfo.duration) {
+                videoState.videoDuration = videoInfo.duration
+              }
+
+              if (videoInfo.fps) {
+                videoState.fps = Math.ceil(videoInfo.fps)
               }
             }
 
-            if (videoInfo.duration) {
-              videoState.videoDuration = videoInfo.duration
+            if (videoThumbnail) {
+              videoState.id = videoThumbnail?.id
+              videoState.thumbnailPathRaw = videoThumbnail?.filePath
+              videoState.thumbnailPath = core.convertFileSrc(
+                videoThumbnail?.filePath,
+              )
+            }
+            appProxy.state.media.push(videoState)
+          } else if (mediaType === 'image') {
+            const imageDimension = await (path.endsWith('.svg')
+              ? getSvgDimensionSilently(path)
+              : getImageDimension(path))
+            const imageState: Image & { type: 'image' } = {
+              type: 'image',
+              id: `${index}-${+new Date()}`,
+              pathRaw: path,
+              path: core.convertFileSrc(path),
+              thumbnailPathRaw: path,
+              thumbnailPath: core.convertFileSrc(path),
+              fileName: fileMetadata?.fileName,
+              mimeType: fileMetadata?.mimeType,
+              sizeInBytes: fileMetadata?.size,
+              size: formatBytes(fileMetadata?.size ?? 0),
+              extension: fileMetadata?.extension?.toLowerCase?.(),
+              config: cloneDeep(imageConfigInitialState),
+              dimensions: {
+                width: imageDimension?.[0] ?? 0,
+                height: imageDimension?.[1] ?? 0,
+              },
             }
 
-            if (videoInfo.fps) {
-              videoState.fps = Math.ceil(videoInfo.fps)
+            // create a static image thumbnail for gif due to performance reason
+            if (path.endsWith('.gif')) {
+              try {
+                const gifThumbnail = await generateVideoThumbnail(path)
+                imageState.thumbnailPathRaw = gifThumbnail.filePath
+                imageState.thumbnailPath = core.convertFileSrc(
+                  gifThumbnail.filePath,
+                )
+              } catch {}
             }
-          }
 
-          if (videoThumbnail) {
-            videoState.id = videoThumbnail?.id
-            videoState.thumbnailPathRaw = videoThumbnail?.filePath
-            videoState.thumbnailPath = core.convertFileSrc(
-              videoThumbnail?.filePath,
-            )
+            // create a static image thumbnail for large svg due to performance reason
+            if (
+              path.endsWith('.svg') &&
+              fileMetadata?.size >= 0.5 * 1024 * 1024
+            ) {
+              try {
+                const outputPngPath = await convertSvgToPng(
+                  path,
+                  imageState.id!,
+                )
+                imageState.thumbnailPathRaw = outputPngPath
+                imageState.thumbnailPath = core.convertFileSrc(outputPngPath)
+              } catch {}
+            }
+            appProxy.state.media.push(imageState)
+          } else {
+            throw new Error('Invalid media type.')
           }
-          appProxy.state.videos.push(videoState)
         } catch {
           corruptedFilesCount++
         }
       }
-      appProxy.state.isLoadingFiles = false
+      appProxy.state.isLoadingMediaFiles = false
       if (corruptedFilesCount > 0) {
         toast.error(
-          `${videoPaths.length > 1 ? '部分文件' : '文件'}似乎已损坏或无效${videoPaths.length > 1 ? '，已自动过滤。' : '。'}`,
+          `${mediaPaths.length > 1 ? '部分文件' : '文件'}似乎已损坏或无效${mediaPaths.length > 1 ? '，已自动过滤' : ''}。`,
         )
-        if (corruptedFilesCount === videoPaths.length) {
+        if (corruptedFilesCount === mediaPaths.length) {
           resetProxy()
         }
       }
@@ -133,14 +218,15 @@ function Root() {
     [resetProxy],
   )
 
-  const pickVideosToCompress = useCallback(async () => {
+  const pickMediaToCompress = useCallback(async () => {
     try {
       const filePath = await open({
         directory: false,
         multiple: true,
-        title: `选择要压缩的视频。`,
+        title: `选择要压缩的图像/视频。`,
         filters: [
           { name: 'video', extensions: Object.keys(extensions?.video) },
+          { name: 'image', extensions: Object.keys(extensions?.image) },
         ],
       })
       if (filePath == null) {
@@ -149,22 +235,22 @@ function Root() {
         console.warn(message)
         return
       }
-      handleVideoSelection(filePath)
+      handleMediaSelection(filePath)
     } catch (error: any) {
-      toast.error(error?.message ?? '无法选择视频。')
+      toast.error(error?.message ?? '无法选择媒体。')
     }
-  }, [handleVideoSelection])
+  }, [handleMediaSelection])
 
-  return isLoadingFiles ? (
-    !videos.length || (totalSelectedFilesCount > 1 && videos.length === 1) ? (
+  return isLoadingMediaFiles ? (
+    !media.length || (totalSelectedMediaCount > 1 && media.length === 1) ? (
       <div className="w-full h-full flex justify-center items-center">
         <Spinner />
       </div>
     ) : (
-      <VideoConfig />
+      <MediaConfig />
     )
-  ) : videos.length ? (
-    <VideoConfig />
+  ) : media.length ? (
+    <MediaConfig />
   ) : (
     <Layout
       containerProps={{ className: 'relative' }}
@@ -184,29 +270,29 @@ function Root() {
             type: 'spring',
           },
         }}
-        onClick={pickVideosToCompress}
+        onClick={pickMediaToCompress}
         onKeyDown={(evt) => {
           if (evt?.key === 'Enter') {
-            pickVideosToCompress()
+            pickMediaToCompress()
           }
         }}
       >
         <div className="flex flex-col justify-center items-center py-16 px-20 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl">
-          <Icon name="videoFile" className="text-primary" size={60} />
-          <p className="italic text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
+          <Icon name="addMedia" className="text-primary" size={60} />
+          <p className="text-sm mt-4 text-gray-600 dark:text-gray-400 text-center">
             拖拽文件到此处
-            <span className="block text-xs">或</span>
-            点击选择视频
+            <span className="block text-xs">Or</span>
+            点击选择媒体
           </p>
         </div>
       </motion.div>
-      <DragAndDrop
+      <DragAndDropFiles
         multiple
-        disable={videos.length > 0}
-        onFile={handleVideoSelection}
+        disable={media.length > 0}
+        onFile={handleMediaSelection}
       />
-      <OpenWithApp onFiles={handleVideoSelection} />
-      <ReadFilesFromClipboard onFiles={handleVideoSelection} />
+      <OpenWithApp onFiles={handleMediaSelection} />
+      <ReadFilesFromClipboard onFiles={handleMediaSelection} />
       <Setting />
     </Layout>
   )

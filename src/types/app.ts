@@ -7,14 +7,19 @@ import {
   Chapter,
   ContainerInfo,
   compressionPresets,
+  ExifInfo,
   extensions,
+  ImageBasicInfo,
+  ImageColorInfo,
+  ImageDimensions,
+  MediaTransformHistory,
+  MediaTransforms,
   SubtitleStream,
+  SvgConfig,
   VideoStream,
-  VideoTransforms,
-  VideoTransformsHistory,
 } from '@/types/compression'
 
-export type VideoMetadataConfig = {
+export type MediaMetadataConfig = {
   title?: string | null
   artist?: string | null
   album?: string | null
@@ -40,6 +45,7 @@ export type AudioConfig = {
 export type SubtitleConfig = {
   subtitlePath: string | null
   language: string
+  title?: string
   fileName: string | null
 }
 
@@ -47,14 +53,14 @@ export type SubtitlesConfig = {
   subtitles: SubtitleConfig[]
   shouldEnableSubtitles?: boolean
   preserveExistingSubtitles?: boolean
+  title?: string | null
 }
 
 export type VideoConfig = {
-  convertToExtension: keyof typeof extensions.video
+  convertToExtension: keyof typeof extensions.video | '-'
   presetName: keyof typeof compressionPresets
   shouldDisableCompression: boolean
   audioConfig: AudioConfig
-  shouldEnableQuality?: boolean
   quality?: number | null
   shouldEnableCustomDimensions?: boolean
   customDimensions?: [number, number]
@@ -64,25 +70,26 @@ export type VideoConfig = {
   customVideoCodec?: string
   shouldTransformVideo?: boolean
   transformVideoConfig?: {
-    transforms: VideoTransforms
-    transformsHistory: VideoTransformsHistory[]
+    transforms: MediaTransforms
+    transformHistory: MediaTransformHistory[]
     previewUrl?: string
   }
   isVideoTransformEditMode?: boolean
   shouldTrimVideo?: boolean
   trimConfig?: TimelineAction[]
   isVideoTrimEditMode?: boolean
-  shouldPreserveMetadata?: boolean
-  metadataConfig?: VideoMetadataConfig | null
+  shouldStripMetadata?: boolean
+  metadataConfig?: MediaMetadataConfig | null
   customThumbnailPath?: string | null
   shouldEnableCustomThumbnail?: boolean
   shouldEnableCustomChannel?: boolean
   shouldEnableCustomBitrate?: boolean
   shouldEnableCustomAudioCodec?: boolean
-  customAudioCodec?: string
   shouldEnableAudioTrackSelection?: boolean
   selectedAudioTracks?: number[]
   subtitlesConfig?: SubtitlesConfig | null
+  shouldEnableCustomSpeed?: boolean
+  customSpeed?: number | null
 }
 
 export type Video = {
@@ -99,7 +106,7 @@ export type Video = {
   videoDuration?: number | null
   isCompressing?: boolean
   isProcessCompleted?: boolean
-  compressedVideo?: {
+  compressedFile?: {
     isSuccessful?: boolean
     pathRaw?: string | null
     path?: string | null
@@ -129,13 +136,72 @@ export type Video = {
   }
 }
 
+export type ImageConfig = {
+  convertToExtension: keyof typeof extensions.image | '-'
+  isLossless: boolean
+  quality: number
+  shouldStripMetadata: boolean
+  metadataConfig?: MediaMetadataConfig | null
+  svgScaleFactor?: number
+  svgConfig?: SvgConfig
+  shouldEnableAdvancedSvgSetting?: boolean
+  shouldEnableCustomDimensions?: boolean
+  customDimensions?: [number, number]
+  shouldTransformImage?: boolean
+  transformImageConfig?: {
+    transforms: MediaTransforms
+    transformHistory: MediaTransformHistory[]
+    previewUrl?: string
+  }
+  isImageTransformEditMode?: boolean
+}
+
+export type Image = {
+  id: string | null
+  pathRaw?: string | null
+  path?: string | null
+  fileName?: string | null
+  mimeType?: string | null
+  sizeInBytes?: number | null
+  size?: string | null
+  extension?: null | string
+  thumbnailPathRaw?: string | null
+  thumbnailPath?: string | null
+  isCompressing?: boolean
+  isProcessCompleted?: boolean
+  compressedFile?: {
+    isSuccessful?: boolean
+    pathRaw?: string | null
+    path?: string | null
+    fileName?: string | null
+    fileNameToDisplay?: string | null
+    mimeType?: string | null
+    sizeInBytes?: number | null
+    size?: string | null
+    extension?: null | string
+    isSaving?: boolean
+    isSaved?: boolean
+    savedPath?: string
+  } | null
+  compressionProgress?: number
+  config: ImageConfig
+  isConfigDirty?: boolean
+  dimensions?: { width: number; height: number }
+  imageInfoRaw?: {
+    basicInfo?: ImageBasicInfo
+    dimensions?: ImageDimensions
+    colorInfo?: ImageColorInfo
+    exifInfo?: ExifInfo
+  }
+}
+
 export type App = {
+  activeTab: 'all' | 'videos' | 'images'
   batchId?: string
-  videos: Video[]
-  isLoadingFiles: boolean
-  totalSelectedFilesCount: number
-  currentVideoIndex: number
-  totalDurationMs: number
+  media: ((Video & { type: 'video' }) | (Image & { type: 'image' }))[]
+  isLoadingMediaFiles: boolean
+  totalSelectedMediaCount: number
+  currentMediaIndex: number
   isCompressing: boolean
   totalProgress: number
   isProcessCompleted: boolean
@@ -143,7 +209,10 @@ export type App = {
   isSaving: boolean
   isSaved: boolean
   savedPath?: string
-  selectedVideoIndexForCustomization: number
-  commonConfigForBatchCompression: VideoConfig
-  showVideoInfo?: boolean
+  selectedMediaIndexForCustomization: number
+  commonConfigForBatchCompression: {
+    videoConfig: VideoConfig
+    imageConfig: ImageConfig
+  }
+  showMediaInfo?: boolean
 }

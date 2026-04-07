@@ -1,4 +1,5 @@
 import { heroui } from '@heroui/react'
+import typography from '@tailwindcss/typography'
 import type { Config } from 'tailwindcss'
 
 const WIDTHS = Object.freeze({
@@ -29,6 +30,7 @@ const config: Config = {
     heroui({
       addCommonColors: true,
     }),
+    typography,
   ],
   content: [
     './src/**/*.{js,ts,jsx,tsx,mdx}',
@@ -37,6 +39,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      animation: {
+        ripple: 'var(--animate-ripple)',
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':

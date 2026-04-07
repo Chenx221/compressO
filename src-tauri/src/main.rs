@@ -1,38 +1,45 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use lib::fs::{self as file_system};
+mod core;
+mod sys;
+mod tauri_commands;
+mod utils;
+
+#[cfg(target_os = "linux")]
+use core::server;
+
 use std::sync::{Arc, Mutex, OnceLock};
+use sys::fs::{self as file_system};
 use tauri::{Emitter, Listener, Manager, Url};
 use tauri_plugin_fs::FsExt;
 use tauri_plugin_log::{Target as LogTarget, TargetKind as LogTargetKind};
 
-use lib::tauri_commands::{
-    dock::{
-        __cmd__clear_dock_badge, __cmd__set_dock_progress, clear_dock_badge, set_dock_progress,
-    },
-    ffmpeg::{
-        __cmd__compress_video, __cmd__compress_videos_batch, __cmd__extract_subtitle,
-        __cmd__generate_video_thumbnail, __cmd__get_video_info, compress_video,
-        compress_videos_batch, extract_subtitle, generate_video_thumbnail, get_video_info,
-    },
+use tauri_commands::{
+    dock::{clear_dock_badge, set_dock_progress},
+    ffmpeg::{compress_video, compress_videos_batch, extract_subtitle, generate_video_thumbnail},
     ffprobe::{
-        __cmd__get_audio_streams, __cmd__get_chapters, __cmd__get_container_info,
-        __cmd__get_subtitle_streams, __cmd__get_video_streams, get_audio_streams, get_chapters,
-        get_container_info, get_subtitle_streams, get_video_streams,
+        get_audio_streams, get_chapters, get_container_info, get_subtitle_streams,
+        get_video_basic_info, get_video_streams,
     },
-    file_manager::{__cmd__show_item_in_file_manager, show_item_in_file_manager},
+    file_manager::show_item_in_file_manager,
     fs::{
-        __cmd__copy_file_to_clipboard, __cmd__delete_cache, __cmd__delete_file,
-        __cmd__get_file_metadata, __cmd__get_image_dimension, __cmd__move_file,
-        __cmd__read_files_from_clipboard, __cmd__read_files_from_paths, copy_file_to_clipboard,
-        delete_cache, delete_file, get_file_metadata, get_image_dimension, move_file,
-        read_files_from_clipboard, read_files_from_paths,
+        copy_file_to_clipboard, delete_cache, delete_file, get_file_metadata, get_image_dimension,
+        get_svg_dimension, move_file, read_files_from_clipboard, read_files_from_paths,
     },
+    image::{
+        compress_images_batch, convert_svg_to_png, get_exif_info, get_image_basic_info,
+        get_image_color_info, get_image_dimensions,
+    },
+    media::compress_media_batch,
+    updater::{check_update, download_and_install_update},
 };
 
 #[cfg(target_os = "linux")]
-use lib::tauri_commands::file_manager::DbusState;
+use tauri_commands::server::{construct_video_url, get_server_url};
+
+#[cfg(target_os = "linux")]
+use tauri_commands::file_manager::DbusState;
 
 #[cfg(any(windows, target_os = "linux"))]
 use std::path::PathBuf;
@@ -85,11 +92,10 @@ fn emit_pending_open_with_app_files(app_handle: &tauri::AppHandle) {
                 log::error!("Failed to emit open-with-app event: {:?}", e);
             }
         }
-    } 
+    }
 }
 
 fn handle_open_with_app(app_handle: &tauri::AppHandle, urls: Vec<Url>) -> Result<(), String> {
-
     let fs_scope = app_handle.fs_scope();
     let asset_scope = app_handle.asset_protocol_scope();
 
@@ -101,11 +107,11 @@ fn handle_open_with_app(app_handle: &tauri::AppHandle, urls: Vec<Url>) -> Result
 
     for url in &urls {
         if let Ok(path) = url.to_file_path() {
-            if let Err(e) = fs_scope.allow_file(&path) {
+            if let Err(_) = fs_scope.allow_file(&path) {
                 let path_str = path.to_string_lossy().to_string();
                 return Err(format!("Failed to allow file in fs_scope: {}", path_str));
             }
-            if let Err(e) = asset_scope.allow_file(&path) {
+            if let Err(_) = asset_scope.allow_file(&path) {
                 let path_str = path.to_string_lossy().to_string();
                 return Err(format!("Failed to allow file in asset_scope: {}", path_str));
             }
@@ -166,6 +172,7 @@ async fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             app.manage(PendingFiles::new());
             app.manage(FrontendReady::new());
@@ -175,7 +182,62 @@ async fn main() {
                 dbus::blocking::SyncConnection::new_session().ok(),
             )));
 
+            #[cfg(target_os = "linux")]
+            {
+                use std::sync::mpsc;
+                use std::thread;
+                use std::time::Duration;
+
+                let (tx, rx) = mpsc::channel();
+
+                thread::spawn(move || {
+                    let rt = match tokio::runtime::Runtime::new() {
+                        Ok(rt) => rt,
+                        Err(e) => {
+                            let _ = tx.send(Err(format!("Failed to create runtime: {}", e)));
+                            return;
+                        }
+                    };
+
+                    rt.block_on(async {
+                        match server::start_server().await {
+                            Ok(state) => {
+                                let shutdown_tx = state.shutdown_tx.clone();
+                                let _ = tx.send(Ok(state));
+
+                                let mut shutdown_rx = shutdown_tx.subscribe();
+                                let _ = shutdown_rx.recv().await;
+                                log::info!("Server thread shutting down");
+                            }
+                            Err(e) => {
+                                log::error!("Failed to start video server: {:?}", e);
+                                let _ = tx.send(Err(format!("Server error: {}", e)));
+                            }
+                        }
+                    });
+                });
+
+                // Wait for the server to start with a timeout
+                let server_state = match rx.recv_timeout(Duration::from_secs(5)) {
+                    Ok(Ok(state)) => state,
+                    Ok(Err(e)) => {
+                        log::error!("Video server startup failed: {}", e);
+                        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e)));
+                    }
+                    Err(_) => {
+                        return Err(Box::new(std::io::Error::new(
+                            std::io::ErrorKind::TimedOut,
+                            "Video server startup timed out after 5 seconds",
+                        )));
+                    }
+                };
+
+                log::info!("Video server started on port {}", server_state.port);
+
+                app.manage(server_state.clone());
+            }
             file_system::setup_app_data_dir(app)?;
+            file_system::ensure_assets_dir(&app.app_handle())?;
 
             let app_handle = app.handle().clone();
             app.once("frontend-ready", move |_| {
@@ -249,10 +311,13 @@ async fn main() {
         .invoke_handler(tauri::generate_handler![
             compress_video,
             compress_videos_batch,
+            compress_images_batch,
+            compress_media_batch,
             extract_subtitle,
             generate_video_thumbnail,
-            get_video_info,
+            get_video_basic_info,
             get_image_dimension,
+            get_svg_dimension,
             get_file_metadata,
             move_file,
             delete_file,
@@ -268,16 +333,37 @@ async fn main() {
             get_video_streams,
             set_dock_progress,
             clear_dock_badge,
+            check_update,
+            download_and_install_update,
+            convert_svg_to_png,
+            get_image_basic_info,
+            get_image_dimensions,
+            get_image_color_info,
+            get_exif_info,
+            #[cfg(target_os = "linux")]
+            get_server_url,
+            #[cfg(target_os = "linux")]
+            construct_video_url
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(
             #[allow(unused_variables)]
             |app_handle, event| {
-                #[cfg(any(target_os = "macos"))]
-                if let tauri::RunEvent::Opened { urls } = event {
-                    if let Err(e) = handle_open_with_app(app_handle, urls) {
+                #[cfg(target_os = "macos")]
+                if let tauri::RunEvent::Opened { ref urls } = event {
+                    if let Err(e) = handle_open_with_app(app_handle, urls.clone()) {
                         log::error!("Failed to handle open with app: {:?}", e);
+                    }
+                }
+
+                // Handle server shutdown on app exit (Linux only)
+                #[cfg(target_os = "linux")]
+                if matches!(event, tauri::RunEvent::Exit) {
+                    if let Some(server_state) = app_handle.try_state::<core::server::ServerState>()
+                    {
+                        log::info!("App exiting, shutting down video server");
+                        core::server::shutdown_server(&server_state);
                     }
                 }
             },
